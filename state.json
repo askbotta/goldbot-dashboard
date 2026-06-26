@@ -1,0 +1,2126 @@
+{
+  "systemState": "WATCHING",
+  "systemReason": "6/6 gates clear \u2014 scanning for entry pattern",
+  "updatedAt": "2026-06-30T22:20:37.8410990Z",
+  "lastTickAt": "2026-06-30T22:20:02.3742480Z",
+  "lastBigMoveDetectionAt": "2026-06-30T22:20:02.3718180Z",
+  "price": 4013.480,
+  "spread": 0.800,
+  "spreadRegime": "NORMAL",
+  "spreadVelocity": "STABLE",
+  "tickSource": "Oanda",
+  "tickLatencyMs": 189,
+  "ticksPerMinute": 75,
+  "feedHealthy": true,
+  "entropyScore": 1.5713658183886443,
+  "sessionAllowed": true,
+  "sessionName": "DEAD",
+  "m1Candles": 100,
+  "m5Candles": 99,
+  "m15Candles": 99,
+  "gates": [
+    {
+      "name": "Entropy",
+      "passed": true,
+      "detail": "H=1.578 \u2014 Soft \u26A0",
+      "required": true
+    },
+    {
+      "name": "Session",
+      "passed": true,
+      "detail": "DEAD",
+      "required": true
+    },
+    {
+      "name": "Spread",
+      "passed": true,
+      "detail": "0.80 pts \u00B7 NORMAL (avg 0.78)",
+      "required": true
+    },
+    {
+      "name": "News",
+      "passed": true,
+      "detail": "Clear",
+      "required": true
+    },
+    {
+      "name": "H4 Dir",
+      "passed": true,
+      "detail": "Bias: Sell",
+      "required": true
+    },
+    {
+      "name": "H4 RSI",
+      "passed": true,
+      "detail": "41.6",
+      "required": true
+    },
+    {
+      "name": "H1 Confirm",
+      "passed": true,
+      "detail": "Not required (ranging market)",
+      "required": false
+    },
+    {
+      "name": "Confidence",
+      "passed": true,
+      "detail": "Not required",
+      "required": false
+    }
+  ],
+  "engines": [
+    {
+      "engineName": "V1 EMA Pullback",
+      "displayName": "Ungated \u003E V1 EMA Pullback",
+      "state": "WAIT",
+      "direction": "None",
+      "confidence": 0,
+      "reason": "Spread too wide",
+      "checks": [
+        {
+          "label": "Candle data sufficient",
+          "passed": true,
+          "detail": "M15=44, M5=71",
+          "enforced": true
+        },
+        {
+          "label": "Not FOMC day",
+          "passed": true,
+          "detail": "2026-06-30",
+          "enforced": false
+        },
+        {
+          "label": "Session \u003C 16:00 UTC",
+          "passed": true,
+          "detail": "22:00 UTC",
+          "enforced": false
+        },
+        {
+          "label": "M15 EMA trending",
+          "passed": true,
+          "detail": "EMA9/21 gap=5.0 (\u22652)",
+          "enforced": false
+        },
+        {
+          "label": "EMA9/21 spread \u2265 6pt",
+          "passed": true,
+          "detail": "5.0pt",
+          "enforced": false
+        },
+        {
+          "label": "M15 ADX \u2265 15",
+          "passed": true,
+          "detail": "ADX14(M15)=16.3",
+          "enforced": false
+        },
+        {
+          "label": "M5 EMA data sufficient",
+          "passed": true,
+          "detail": "71 pts",
+          "enforced": true
+        },
+        {
+          "label": "M5 EMA9/21 separated \u2265 0.4",
+          "passed": true,
+          "detail": "gap=1.88",
+          "enforced": false
+        },
+        {
+          "label": "M5 structure confirms Sell",
+          "passed": true,
+          "detail": "HH\u002BHL / LH\u002BLL",
+          "enforced": false
+        },
+        {
+          "label": "M5 trigger candle present",
+          "passed": true,
+          "detail": "yes",
+          "enforced": true
+        },
+        {
+          "label": "Pullback touched M5 EMA9",
+          "passed": true,
+          "detail": "EMA9=4013.93",
+          "enforced": false
+        },
+        {
+          "label": "M5 candle closes Sell",
+          "passed": true,
+          "detail": "bearish",
+          "enforced": true
+        },
+        {
+          "label": "Spread \u2264 0.55",
+          "passed": false,
+          "detail": "0.84 pts",
+          "enforced": true
+        }
+      ]
+    },
+    {
+      "engineName": "V3 Momentum",
+      "displayName": "Ungated \u003E V3 Momentum",
+      "state": "WAIT",
+      "direction": "None",
+      "confidence": 0,
+      "reason": "Volume 45 \u003C 0.7x MA 490",
+      "checks": [
+        {
+          "label": "Candle data sufficient",
+          "passed": true,
+          "detail": "M15=44, M5=71",
+          "enforced": true
+        },
+        {
+          "label": "Session 00-11 UTC",
+          "passed": true,
+          "detail": "22:00 UTC",
+          "enforced": false
+        },
+        {
+          "label": "M15 ADX \u2265 20",
+          "passed": false,
+          "detail": "ADX14(M15)=16.3",
+          "enforced": false
+        },
+        {
+          "label": "M15 EMA trending",
+          "passed": true,
+          "detail": "EMA9/21 gap=4.96 (\u22652)",
+          "enforced": false
+        },
+        {
+          "label": "M5 EMA9/21 separated \u2265 0.4",
+          "passed": true,
+          "detail": "gap=1.88",
+          "enforced": false
+        },
+        {
+          "label": "M5 trigger candle present",
+          "passed": true,
+          "detail": "yes",
+          "enforced": true
+        },
+        {
+          "label": "M5 candle matches Sell",
+          "passed": true,
+          "detail": "bearish",
+          "enforced": false
+        },
+        {
+          "label": "Body \u2265 0.55",
+          "passed": true,
+          "detail": "body=0.77",
+          "enforced": false
+        },
+        {
+          "label": "Wick \u2264 20%",
+          "passed": false,
+          "detail": "wick=23%",
+          "enforced": false
+        },
+        {
+          "label": "Candle \u2265 0.5\u00D7ATR",
+          "passed": false,
+          "detail": "range=1.10, min=1.43",
+          "enforced": false
+        },
+        {
+          "label": "Volume \u2265 0.7\u00D7MA",
+          "passed": false,
+          "detail": "45 vs 490",
+          "enforced": true
+        }
+      ]
+    },
+    {
+      "engineName": "Range-Fade",
+      "displayName": "Range-Fade",
+      "state": "WAIT",
+      "direction": "None",
+      "confidence": 0,
+      "reason": "No signal",
+      "checks": [
+        {
+          "label": "Engine enabled",
+          "passed": true,
+          "detail": "on",
+          "enforced": true
+        },
+        {
+          "label": "Candle data sufficient",
+          "passed": true,
+          "detail": "M5=71, M15=44",
+          "enforced": true
+        },
+        {
+          "label": "M15 regime = Ranging",
+          "passed": true,
+          "detail": "Ranging",
+          "enforced": true
+        },
+        {
+          "label": "Bollinger Bands available",
+          "passed": true,
+          "detail": "yes",
+          "enforced": true
+        },
+        {
+          "label": "At BB \u002B RSI extreme (\u226568/\u226432)",
+          "passed": false,
+          "detail": "RSI 43, px 4013.94 [4007.77\u20134021.80]",
+          "enforced": true
+        }
+      ]
+    },
+    {
+      "engineName": "Special Trade to Grab",
+      "displayName": "Special Trade to Grab",
+      "state": "WAIT",
+      "direction": "None",
+      "confidence": 0,
+      "reason": "No signal",
+      "checks": [
+        {
+          "label": "Engine enabled",
+          "passed": true,
+          "detail": "on",
+          "enforced": true
+        },
+        {
+          "label": "Candle data sufficient",
+          "passed": true,
+          "detail": "M5=71",
+          "enforced": true
+        },
+        {
+          "label": "ZigZag swing found (\u226520pt)",
+          "passed": true,
+          "detail": "1 pivots",
+          "enforced": true
+        },
+        {
+          "label": "Swing within 3 bars",
+          "passed": false,
+          "detail": "17 bars since HIGH",
+          "enforced": true
+        }
+      ]
+    },
+    {
+      "engineName": "Vol-Spike Breakout",
+      "displayName": "Vol-Spike Breakout",
+      "state": "WAIT",
+      "direction": "None",
+      "confidence": 0,
+      "reason": "No signal",
+      "checks": [
+        {
+          "label": "Engine enabled",
+          "passed": true,
+          "detail": "on",
+          "enforced": true
+        },
+        {
+          "label": "Market entry (cell)",
+          "passed": false,
+          "detail": "stop-entry monitor owns this",
+          "enforced": true
+        }
+      ]
+    },
+    {
+      "engineName": "Liquidity-Grab",
+      "displayName": "Liquidity-Grab",
+      "state": "WAIT",
+      "direction": "None",
+      "confidence": 0,
+      "reason": "No signal",
+      "checks": [
+        {
+          "label": "Engine enabled",
+          "passed": true,
+          "detail": "on",
+          "enforced": true
+        },
+        {
+          "label": "M5 bars available",
+          "passed": true,
+          "detail": "yes",
+          "enforced": true
+        },
+        {
+          "label": "Wick sweep \u2265 1.5pt \u002B reverse",
+          "passed": false,
+          "detail": "none",
+          "enforced": true
+        }
+      ]
+    }
+  ],
+  "market": {
+    "regime": "Range",
+    "adx": 17.928285414975346765138674845,
+    "atrRatio": 0.8677346161812288915996680911,
+    "slMultiplier": 1.00,
+    "h4Bias": "Sell",
+    "h1Bias": "\u2014"
+  },
+  "stats": {
+    "total": 0,
+    "wins": 0,
+    "losses": 0
+  },
+  "recentTrades": [],
+  "paperDayStats": {
+    "realizedPts": 0,
+    "trades": 0,
+    "wins": 0,
+    "losses": 0,
+    "stopExits": 0,
+    "timeExits": 0,
+    "flips": 0,
+    "reentries": 0
+  },
+  "m5Predictors": [
+    {
+      "name": "Fade-V1",
+      "direction": "MIXED",
+      "confidence": 6,
+      "band": "MIXED",
+      "reason": "score=53  EMA SELL sep 2.1",
+      "score": 52.853774406168387016540231315
+    },
+    {
+      "name": "EMA Trend",
+      "direction": "SELL",
+      "confidence": 61,
+      "band": "LIGHT_FADE",
+      "reason": "EMA9/21 sep 2.1pt",
+      "score": 39
+    },
+    {
+      "name": "Last-3 Pattern",
+      "direction": "MIXED",
+      "confidence": 0,
+      "band": "MIXED",
+      "reason": "no clean HH/HL or LH/LL",
+      "score": 50
+    }
+  ],
+  "m5Outlook": {
+    "nextBarLondon": "23:20",
+    "direction": "MIXED",
+    "regime": "NEUTRAL",
+    "bigMoveProbPct": 30,
+    "confidence": 6,
+    "score": 52.853774406168387016540231315,
+    "suppression": ""
+  },
+  "bigMoves": [
+    {
+      "barTimeUtc": "2026-06-30T23:15:00.0000000\u002B01:00",
+      "actualDirection": "BUY",
+      "magnitude": 1.965,
+      "v1Direction": "BUY",
+      "v1Confidence": 60,
+      "outcome": "WIN",
+      "missReason": "",
+      "tier": "HEADLINE",
+      "v1Score": 64.5076047963045,
+      "v1Suppression": "",
+      "openPrice": 4014.77,
+      "closePrice": 4014.78
+    },
+    {
+      "barTimeUtc": "2026-06-30T23:10:00.0000000\u002B01:00",
+      "actualDirection": "SELL",
+      "magnitude": 3.46,
+      "v1Direction": "BUY",
+      "v1Confidence": 55,
+      "outcome": "MISS_WRONG",
+      "missReason": "V1 called BUY (committed lean, but bar drifted sell by 3.46pt)",
+      "tier": "QUIET",
+      "v1Score": 55.0623854341044,
+      "v1Suppression": "",
+      "openPrice": 4017.4,
+      "closePrice": 4014.755
+    },
+    {
+      "barTimeUtc": "2026-06-30T23:00:00.0000000\u002B01:00",
+      "actualDirection": "BUY",
+      "magnitude": 6.825,
+      "v1Direction": "MIXED",
+      "v1Confidence": 10,
+      "outcome": "MISS_NOCALL",
+      "missReason": "V1 saw conflicting signals (chop filter / low conviction) \u2014 said WAIT",
+      "tier": "BRONZE",
+      "v1Score": 55,
+      "v1Suppression": "",
+      "openPrice": 4014.34,
+      "closePrice": 4014.14
+    }
+  ],
+  "todaySignals": [
+    {
+      "id": "3470f08e-ac91-402e-96c8-9dd43250313c",
+      "signalTimeUtc": "2026-06-30T22:19:02.8067300Z",
+      "engineName": "M1-Mom Close \u002B2",
+      "direction": "Sell",
+      "confidence": 100,
+      "entry": 4013.675,
+      "stopLoss": 0,
+      "takeProfit1": 0,
+      "status": "LOSS",
+      "pnlPoints": -0.554999999999836,
+      "durationMins": 0,
+      "isVirtual": false,
+      "tradeable": false,
+      "tradeableReason": "hour 22:00 UTC outside NY window 13-16",
+      "isStaggered": false,
+      "closePrice": 4014.23
+    },
+    {
+      "id": "685f67d9-4507-40e8-9dff-6994f4c62528",
+      "signalTimeUtc": "2026-06-30T22:16:00.6325390Z",
+      "engineName": "M1-Mom Close \u002B2",
+      "direction": "Buy",
+      "confidence": 100,
+      "entry": 4016.435,
+      "stopLoss": 0,
+      "takeProfit1": 0,
+      "status": "LOSS",
+      "pnlPoints": -0.284999999999854,
+      "durationMins": 0,
+      "isVirtual": false,
+      "tradeable": false,
+      "tradeableReason": "hour 22:00 UTC outside NY window 13-16",
+      "isStaggered": false,
+      "closePrice": 4016.15
+    },
+    {
+      "id": "e2ff226e-ff5b-4f01-9406-efd57fead656",
+      "signalTimeUtc": "2026-06-30T22:10:00.4928040Z",
+      "engineName": "M1-Mom Close \u002B2",
+      "direction": "Buy",
+      "confidence": 100,
+      "entry": 4017.3,
+      "stopLoss": 0,
+      "takeProfit1": 0,
+      "status": "LOSS",
+      "pnlPoints": -1.42000000000007,
+      "durationMins": 0,
+      "isVirtual": false,
+      "tradeable": false,
+      "tradeableReason": "hour 22:00 UTC outside NY window 13-16",
+      "isStaggered": false,
+      "closePrice": 4015.88
+    },
+    {
+      "id": "5f09a6d1-a291-4b02-8cc6-af14f6703d39",
+      "signalTimeUtc": "2026-06-30T22:06:00.5092800Z",
+      "engineName": "M1-Mom Close \u002B2",
+      "direction": "Buy",
+      "confidence": 100,
+      "entry": 4015.975,
+      "stopLoss": 0,
+      "takeProfit1": 0,
+      "status": "LOSS",
+      "pnlPoints": -0.315000000000055,
+      "durationMins": 0,
+      "isVirtual": false,
+      "tradeable": false,
+      "tradeableReason": "hour 22:00 UTC outside NY window 13-16",
+      "isStaggered": false,
+      "closePrice": 4015.66
+    },
+    {
+      "id": "13287fe8-143e-4bf2-bc6a-2fb048df454a",
+      "signalTimeUtc": "2026-06-30T22:05:56.2529620Z",
+      "engineName": "M1-Mom Midbar \u002B2",
+      "direction": "Buy",
+      "confidence": 100,
+      "entry": 4015.72,
+      "stopLoss": 0,
+      "takeProfit1": 0,
+      "status": "LOSS",
+      "pnlPoints": -0.199999999999818,
+      "durationMins": 0,
+      "isVirtual": false,
+      "tradeable": false,
+      "tradeableReason": "hour 22:00 UTC outside NY window 13-16",
+      "isStaggered": false,
+      "closePrice": 4015.52
+    }
+  ],
+  "paperPnl": {
+    "totalPoints": -2.774999999999633,
+    "resolvedSignals": 5,
+    "wins": 0,
+    "losses": 5,
+    "pending": 0,
+    "bestSinglePoints": 0,
+    "worstSinglePoints": -1.42000000000007,
+    "curve": [
+      {
+        "timeUtc": "2026-06-30T22:05:56.2529620Z",
+        "cumulativePoints": -0.199999999999818
+      },
+      {
+        "timeUtc": "2026-06-30T22:06:00.5092800Z",
+        "cumulativePoints": -0.514999999999873
+      },
+      {
+        "timeUtc": "2026-06-30T22:10:00.4928040Z",
+        "cumulativePoints": -1.934999999999943
+      },
+      {
+        "timeUtc": "2026-06-30T22:16:00.6325390Z",
+        "cumulativePoints": -2.219999999999797
+      },
+      {
+        "timeUtc": "2026-06-30T22:19:02.8067300Z",
+        "cumulativePoints": -2.774999999999633
+      }
+    ]
+  },
+  "rollingHitRate": {
+    "windowSize": 20,
+    "sampleCount": 2,
+    "wins": 1,
+    "losses": 1,
+    "hitRatePct": 50,
+    "belowWarnThreshold": false
+  },
+  "midBarGuidance": {
+    "elapsedSec": 37,
+    "positionDir": "FLAT",
+    "predictorLean": "MIXED",
+    "oneMin": {
+      "phase": "1min",
+      "icon": "\u23F8",
+      "label": "WAITING",
+      "context": "First minute still forming \u2014 wait for direction signal.",
+      "positionDir": "FLAT",
+      "predictorLean": "MIXED",
+      "barDir": "FLAT",
+      "elapsedSec": 37
+    },
+    "twoMin": {
+      "phase": "2min",
+      "icon": "\u23F8",
+      "label": "WAITING",
+      "context": "Second minute hasn\u0027t closed yet \u2014 early read available on the left.",
+      "positionDir": "FLAT",
+      "predictorLean": "MIXED",
+      "barDir": "FLAT",
+      "elapsedSec": 37
+    },
+    "barStartUtc": "2026-06-30T22:20:00Z"
+  },
+  "nextBarTiles": {
+    "oneMin": {
+      "timeframe": "1m",
+      "direction": "BUY",
+      "confidence": 56,
+      "score": 56,
+      "reason": "EMA BUY bias, sep 0.71pt",
+      "hits": 22,
+      "samples": 50,
+      "hitRate": 0.44,
+      "targetBarTimeUtc": "2026-06-30T22:20:00.0000000Z",
+      "recentCalls": [
+        {
+          "direction": "DOWN",
+          "hit": false,
+          "targetBarTimeUtc": "2026-06-30T22:19:00.0000000Z"
+        },
+        {
+          "direction": "DOWN",
+          "hit": false,
+          "targetBarTimeUtc": "2026-06-30T22:17:00.0000000Z"
+        },
+        {
+          "direction": "UP",
+          "hit": false,
+          "targetBarTimeUtc": "2026-06-30T22:16:00.0000000Z"
+        },
+        {
+          "direction": "UP",
+          "hit": true,
+          "targetBarTimeUtc": "2026-06-30T22:15:00.0000000Z"
+        },
+        {
+          "direction": "DOWN",
+          "hit": false,
+          "targetBarTimeUtc": "2026-06-30T22:14:00.0000000Z"
+        }
+      ],
+      "breakoutProb": 49,
+      "breakoutLean": "UP",
+      "breakoutBand": "LOW",
+      "breakoutReason": "mid-range (0.74) \u00B7 ATR expanding 1.19\u00D7 \u00B7 BB squeeze p96",
+      "supportPrice": 4013.840,
+      "supportTouches": 3,
+      "resistancePrice": 4018.7025,
+      "resistanceTouches": 2
+    },
+    "fiveMin": {
+      "timeframe": "5m",
+      "direction": "MIXED",
+      "confidence": 6,
+      "score": 52.853774406168387016540231315,
+      "reason": "Fade-V1: no edge",
+      "notice": "",
+      "hits": 21,
+      "samples": 50,
+      "hitRate": 0.42,
+      "targetBarTimeUtc": "2026-06-30T22:20:00.0000000Z",
+      "recentCalls": [
+        {
+          "direction": "UP",
+          "hit": true,
+          "targetBarTimeUtc": "2026-06-30T22:15:00.0000000Z"
+        },
+        {
+          "direction": "UP",
+          "hit": false,
+          "targetBarTimeUtc": "2026-06-30T19:10:00.0000000Z"
+        },
+        {
+          "direction": "DOWN",
+          "hit": true,
+          "targetBarTimeUtc": "2026-06-26T13:00:00.0000000Z"
+        },
+        {
+          "direction": "UP",
+          "hit": false,
+          "targetBarTimeUtc": "2026-06-26T12:35:00.0000000Z"
+        },
+        {
+          "direction": "UP",
+          "hit": true,
+          "targetBarTimeUtc": "2026-06-26T12:25:00.0000000Z"
+        }
+      ],
+      "breakoutProb": 22,
+      "breakoutLean": "DOWN",
+      "breakoutBand": "LOW",
+      "breakoutReason": "mid-range (0.50) \u00B7 ATR expanding 1.12\u00D7 \u00B7 BB squeeze p57",
+      "resistancePrice": 4021.1625,
+      "resistanceTouches": 4,
+      "patternName": "Bullish Harami Cross",
+      "patternBias": "BUY",
+      "patternStrength": 2
+    },
+    "fifteenMin": {
+      "timeframe": "15m",
+      "direction": "SELL",
+      "confidence": 64,
+      "score": 35.271428571428571428571428571,
+      "reason": "M15 score 35  \u00B7  conviction 0/3",
+      "hits": 30,
+      "samples": 50,
+      "hitRate": 0.6,
+      "targetBarTimeUtc": "2026-06-30T22:15:00.0000000Z",
+      "recentCalls": [
+        {
+          "direction": "DOWN",
+          "hit": true,
+          "targetBarTimeUtc": "2026-06-30T20:45:00.0000000Z"
+        },
+        {
+          "direction": "DOWN",
+          "hit": true,
+          "targetBarTimeUtc": "2026-06-30T20:30:00.0000000Z"
+        },
+        {
+          "direction": "DOWN",
+          "hit": true,
+          "targetBarTimeUtc": "2026-06-30T20:15:00.0000000Z"
+        },
+        {
+          "direction": "DOWN",
+          "hit": false,
+          "targetBarTimeUtc": "2026-06-30T20:00:00.0000000Z"
+        },
+        {
+          "direction": "DOWN",
+          "hit": true,
+          "targetBarTimeUtc": "2026-06-30T19:45:00.0000000Z"
+        }
+      ],
+      "breakoutProb": 49,
+      "breakoutLean": "DOWN",
+      "breakoutBand": "LOW",
+      "breakoutReason": "mid-range (0.27) \u00B7 BB squeeze p32",
+      "resistancePrice": 4021.550,
+      "resistanceTouches": 2,
+      "patternName": "Bearish Engulfing",
+      "patternBias": "SELL",
+      "patternStrength": 3
+    },
+    "oneMinEnhanced": {
+      "timeframe": "1m",
+      "direction": "BUY",
+      "confidence": 56,
+      "score": 56,
+      "reason": "EMA BUY bias, sep 0.71pt  \u00B7  density 0.73x (normal)",
+      "notice": "\u002B tick density",
+      "hits": 22,
+      "samples": 50,
+      "hitRate": 0.44,
+      "targetBarTimeUtc": "2026-06-30T22:20:00.0000000Z"
+    },
+    "fiveMinEnhanced": {
+      "timeframe": "5m",
+      "direction": "MIXED",
+      "confidence": 6,
+      "score": 52.853774406168387016540231315,
+      "reason": "Fade-V1: no edge  \u00B7  density 0.72x (normal)",
+      "notice": "\u002B tick density",
+      "hits": 21,
+      "samples": 50,
+      "hitRate": 0.42,
+      "targetBarTimeUtc": "2026-06-30T22:20:00.0000000Z"
+    },
+    "fifteenMinEnhanced": {
+      "timeframe": "15m",
+      "direction": "SELL",
+      "confidence": 64,
+      "score": 36,
+      "reason": "M15 score 36  \u00B7  conviction 0/3  \u00B7  density 0.82x (normal)",
+      "notice": "\u002B tick density",
+      "hits": 30,
+      "samples": 50,
+      "hitRate": 0.6,
+      "targetBarTimeUtc": "2026-06-30T22:15:00.0000000Z"
+    },
+    "oneMinSpread": {
+      "timeframe": "1m",
+      "direction": "BUY",
+      "confidence": 56,
+      "score": 56,
+      "reason": "EMA BUY bias, sep 0.71pt  \u00B7  spread NORMAL",
+      "notice": "spread NORMAL",
+      "hits": 22,
+      "samples": 50,
+      "hitRate": 0.44,
+      "targetBarTimeUtc": "2026-06-30T22:20:00.0000000Z"
+    },
+    "fiveMinSpread": {
+      "timeframe": "5m",
+      "direction": "MIXED",
+      "confidence": 6,
+      "score": 52.853774406168387016540231315,
+      "reason": "suppressed by dampener  \u00B7  spread NORMAL",
+      "notice": "spread NORMAL",
+      "hits": 21,
+      "samples": 50,
+      "hitRate": 0.42,
+      "targetBarTimeUtc": "2026-06-30T22:20:00.0000000Z"
+    },
+    "fifteenMinSpread": {
+      "timeframe": "15m",
+      "direction": "SELL",
+      "confidence": 64,
+      "score": 35.271428571428571428571428571,
+      "reason": "M15 score 35  \u00B7  conviction 0/3  \u00B7  spread NORMAL",
+      "notice": "spread NORMAL",
+      "hits": 30,
+      "samples": 50,
+      "hitRate": 0.6,
+      "targetBarTimeUtc": "2026-06-30T22:15:00.0000000Z"
+    },
+    "oneMinNews": {
+      "timeframe": "1m",
+      "direction": "BUY",
+      "confidence": 56,
+      "score": 56,
+      "reason": "EMA BUY bias, sep 0.71pt  \u00B7  no news",
+      "notice": "no news",
+      "hits": 22,
+      "samples": 50,
+      "hitRate": 0.44,
+      "targetBarTimeUtc": "2026-06-30T22:20:00.0000000Z"
+    },
+    "fiveMinNews": {
+      "timeframe": "5m",
+      "direction": "MIXED",
+      "confidence": 6,
+      "score": 52.853774406168387016540231315,
+      "reason": "suppressed by dampener  \u00B7  no news",
+      "notice": "no news",
+      "hits": 21,
+      "samples": 50,
+      "hitRate": 0.42,
+      "targetBarTimeUtc": "2026-06-30T22:20:00.0000000Z"
+    },
+    "fifteenMinNews": {
+      "timeframe": "15m",
+      "direction": "SELL",
+      "confidence": 64,
+      "score": 35.271428571428571428571428571,
+      "reason": "M15 score 35  \u00B7  conviction 0/3  \u00B7  no news",
+      "notice": "no news",
+      "hits": 30,
+      "samples": 50,
+      "hitRate": 0.6,
+      "targetBarTimeUtc": "2026-06-30T22:15:00.0000000Z"
+    }
+  },
+  "riskPercent": 2.0,
+  "accountBalanceGbp": 108652.3268,
+  "activeSubTrades": [
+    {
+      "parentTradeId": "9e67af8c-106c-4268-87b4-dd9fd4f2985e",
+      "parentEngineName": "Velocity-V1",
+      "parentDirection": "Sell",
+      "anchor": 4551.350,
+      "openedAtUtc": "2026-05-29T19:45:02.5458300Z",
+      "tileRole": "SAME_DIR",
+      "tileDirection": "Sell",
+      "phase": "REARMING",
+      "triggerPts": 1,
+      "triggerPrice": 4550.200,
+      "triggeredAtUtc": "2026-05-29T19:48:01.0908220Z",
+      "currentProfitPts": 537.870,
+      "peakProfitPts": 5.840,
+      "lastLockedPts": 3.840,
+      "exits": 1,
+      "cumulativePts": 3.840,
+      "trailRetracePts": 2,
+      "minPeakToArmExitPts": 3,
+      "armBandPts": 1,
+      "abandonAtPts": 20
+    },
+    {
+      "parentTradeId": "9e67af8c-106c-4268-87b4-dd9fd4f2985e",
+      "parentEngineName": "Velocity-V1",
+      "parentDirection": "Sell",
+      "anchor": 4551.350,
+      "openedAtUtc": "2026-05-29T19:45:02.5458300Z",
+      "tileRole": "OPP_DIR",
+      "tileDirection": "Buy",
+      "phase": "WAITING",
+      "triggerPts": 1,
+      "triggerPrice": 0,
+      "currentProfitPts": -537.870,
+      "peakProfitPts": 0,
+      "lastLockedPts": 0,
+      "exits": 0,
+      "cumulativePts": 0,
+      "trailRetracePts": 2,
+      "minPeakToArmExitPts": 3,
+      "armBandPts": 1,
+      "abandonAtPts": 20
+    },
+    {
+      "parentTradeId": "578a7023-be73-48af-8b01-81654206fc06",
+      "parentEngineName": "Velocity-V1",
+      "parentDirection": "Sell",
+      "anchor": 4543.220,
+      "openedAtUtc": "2026-05-29T20:45:02.4360410Z",
+      "tileRole": "SAME_DIR",
+      "tileDirection": "Sell",
+      "phase": "REARMING",
+      "triggerPts": 1,
+      "triggerPrice": 4542.100,
+      "triggeredAtUtc": "2026-05-29T20:47:38.2539720Z",
+      "currentProfitPts": 529.740,
+      "peakProfitPts": 3.770,
+      "lastLockedPts": 1.770,
+      "exits": 1,
+      "cumulativePts": 1.770,
+      "trailRetracePts": 2,
+      "minPeakToArmExitPts": 3,
+      "armBandPts": 1,
+      "abandonAtPts": 20
+    },
+    {
+      "parentTradeId": "578a7023-be73-48af-8b01-81654206fc06",
+      "parentEngineName": "Velocity-V1",
+      "parentDirection": "Sell",
+      "anchor": 4543.220,
+      "openedAtUtc": "2026-05-29T20:45:02.4360410Z",
+      "tileRole": "OPP_DIR",
+      "tileDirection": "Buy",
+      "phase": "WAITING",
+      "triggerPts": 1,
+      "triggerPrice": 0,
+      "currentProfitPts": -529.740,
+      "peakProfitPts": 0,
+      "lastLockedPts": 0,
+      "exits": 0,
+      "cumulativePts": 0,
+      "trailRetracePts": 2,
+      "minPeakToArmExitPts": 3,
+      "armBandPts": 1,
+      "abandonAtPts": 20
+    },
+    {
+      "parentTradeId": "cecfa140-5cba-4803-a860-b31ea8afea82",
+      "parentEngineName": "V1 EMA Pullback",
+      "parentDirection": "Sell",
+      "anchor": 4545.660,
+      "openedAtUtc": "2026-05-29T20:20:02.2672560Z",
+      "tileRole": "SAME_DIR",
+      "tileDirection": "Sell",
+      "phase": "REARMING",
+      "triggerPts": 1,
+      "triggerPrice": 4544.350,
+      "triggeredAtUtc": "2026-05-29T20:22:41.1728860Z",
+      "currentProfitPts": 532.180,
+      "peakProfitPts": 4.560,
+      "lastLockedPts": 2.560,
+      "exits": 1,
+      "cumulativePts": 2.560,
+      "trailRetracePts": 2,
+      "minPeakToArmExitPts": 3,
+      "armBandPts": 1,
+      "abandonAtPts": 20
+    },
+    {
+      "parentTradeId": "cecfa140-5cba-4803-a860-b31ea8afea82",
+      "parentEngineName": "V1 EMA Pullback",
+      "parentDirection": "Sell",
+      "anchor": 4545.660,
+      "openedAtUtc": "2026-05-29T20:20:02.2672560Z",
+      "tileRole": "OPP_DIR",
+      "tileDirection": "Buy",
+      "phase": "WAITING",
+      "triggerPts": 1,
+      "triggerPrice": 0,
+      "currentProfitPts": -532.180,
+      "peakProfitPts": 0,
+      "lastLockedPts": 0,
+      "exits": 0,
+      "cumulativePts": 0,
+      "trailRetracePts": 2,
+      "minPeakToArmExitPts": 3,
+      "armBandPts": 1,
+      "abandonAtPts": 20
+    }
+  ],
+  "livePnl": {
+    "total": 5.395000000000367,
+    "closedSignalsPts": -2.774999999999633,
+    "openTradePartialPts": 0,
+    "openTradeUnrealizedPts": 0,
+    "subsLockedPts": 8.170,
+    "subsLivePts": 0,
+    "subsBrokerRealisedGbp": 0,
+    "realAccountTodayGbp": 0.0000,
+    "realAccountTodayPts": 0.0000,
+    "realMainsTodayGbp": 0.0000
+  },
+  "oandaAccount": {
+    "accountId": "101-004-39241316-002",
+    "currency": "GBP",
+    "balance": 108652.3268,
+    "equity": 108652.3268,
+    "unrealizedPl": 0.0000,
+    "realizedPlLifetime": 8533.0985,
+    "marginUsed": 0.0000,
+    "marginAvailable": 108652.3268,
+    "marginCloseoutPct": 0.00000,
+    "openTradeCount": 0,
+    "openPositionCount": 0,
+    "pendingOrderCount": 0,
+    "fetchedAtUtc": "2026-06-30T22:20:36.6005230Z"
+  },
+  "ctraderAccount": {
+    "traderLogin": 4255590,
+    "isDemo": true,
+    "balance": 131865.18,
+    "currency": "GBP",
+    "openPositionCount": 8,
+    "positions": [
+      {
+        "positionId": 51628216,
+        "side": "SELL",
+        "volumeLots": 0.05,
+        "entry": 4016.84,
+        "stopLoss": 4041.84,
+        "takeProfit": 0
+      },
+      {
+        "positionId": 51628218,
+        "side": "SELL",
+        "volumeLots": 0.05,
+        "entry": 4016.75,
+        "stopLoss": 4041.75,
+        "takeProfit": 0
+      },
+      {
+        "positionId": 51628219,
+        "side": "SELL",
+        "volumeLots": 0.05,
+        "entry": 4016.73,
+        "stopLoss": 4041.73,
+        "takeProfit": 0
+      },
+      {
+        "positionId": 51628421,
+        "side": "SELL",
+        "volumeLots": 0.05,
+        "entry": 4014.51,
+        "stopLoss": 4039.51,
+        "takeProfit": 0
+      },
+      {
+        "positionId": 51628561,
+        "side": "SELL",
+        "volumeLots": 0.05,
+        "entry": 4014.62,
+        "stopLoss": 4039.62,
+        "takeProfit": 0
+      },
+      {
+        "positionId": 51628563,
+        "side": "SELL",
+        "volumeLots": 0.05,
+        "entry": 4014.68,
+        "stopLoss": 4039.68,
+        "takeProfit": 0
+      },
+      {
+        "positionId": 51628565,
+        "side": "SELL",
+        "volumeLots": 0.05,
+        "entry": 4014.68,
+        "stopLoss": 4039.68,
+        "takeProfit": 0
+      },
+      {
+        "positionId": 51628567,
+        "side": "SELL",
+        "volumeLots": 0.05,
+        "entry": 4014.7,
+        "stopLoss": 4039.7,
+        "takeProfit": 0
+      }
+    ],
+    "fetchedAtUtc": "2026-06-30T22:20:36.8180590Z"
+  },
+  "ctraderHistory": [
+    {
+      "positionId": 51628548,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4015.12,
+      "closePrice": 4014.67,
+      "netProfit": -1.96,
+      "balance": 131865.18,
+      "openTimeUtc": "2026-06-30T22:19:40.5460000Z",
+      "closeTimeUtc": "2026-06-30T22:19:53.1580000Z",
+      "engineName": "hedge-d1-B-1782857980297",
+      "comment": "hedge-d1-B-1782857980297",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628553,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4015.23,
+      "closePrice": 4014.7,
+      "netProfit": -2.26,
+      "balance": 131867.14,
+      "openTimeUtc": "2026-06-30T22:19:44.2250000Z",
+      "closeTimeUtc": "2026-06-30T22:19:51.8830000Z",
+      "engineName": "hedge-d1-B-1782857983992",
+      "comment": "hedge-d1-B-1782857983992",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628557,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4015.39,
+      "closePrice": 4014.68,
+      "netProfit": -2.94,
+      "balance": 131869.4,
+      "openTimeUtc": "2026-06-30T22:19:46.3720000Z",
+      "closeTimeUtc": "2026-06-30T22:19:50.2190000Z",
+      "engineName": "hedge-d1-B-1782857985437",
+      "comment": "hedge-d1-B-1782857985437",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628555,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4015.51,
+      "closePrice": 4014.68,
+      "netProfit": -3.39,
+      "balance": 131872.34,
+      "openTimeUtc": "2026-06-30T22:19:45.1940000Z",
+      "closeTimeUtc": "2026-06-30T22:19:49.2330000Z",
+      "engineName": "hedge-d1-B-1782857984472",
+      "comment": "hedge-d1-B-1782857984472",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628503,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4014.33,
+      "closePrice": 4015.35,
+      "netProfit": -4.11,
+      "balance": 131875.73,
+      "openTimeUtc": "2026-06-30T22:19:03.3040000Z",
+      "closeTimeUtc": "2026-06-30T22:19:47.3230000Z",
+      "engineName": "m1mom-M1-Mom_Close_\u002B2-1782857942804",
+      "comment": "m1mom-M1-Mom_Close_\u002B2-1782857942804",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628507,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4014.41,
+      "closePrice": 4015.39,
+      "netProfit": -3.96,
+      "balance": 131879.84,
+      "openTimeUtc": "2026-06-30T22:19:03.5780000Z",
+      "closeTimeUtc": "2026-06-30T22:19:46.1350000Z",
+      "engineName": "hedge-d0-S-1782857943035",
+      "comment": "hedge-d0-S-1782857943035",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628502,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4014.33,
+      "closePrice": 4015.51,
+      "netProfit": -4.71,
+      "balance": 131883.8,
+      "openTimeUtc": "2026-06-30T22:19:03.1150000Z",
+      "closeTimeUtc": "2026-06-30T22:19:44.9870000Z",
+      "engineName": "m1mom-M1-Mom_Close_\u002B2-1782857942793",
+      "comment": "m1mom-M1-Mom_Close_\u002B2-1782857942793",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628471,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4014.18,
+      "closePrice": 4015.11,
+      "netProfit": -3.77,
+      "balance": 131888.51,
+      "openTimeUtc": "2026-06-30T22:18:40.1150000Z",
+      "closeTimeUtc": "2026-06-30T22:19:41.2400000Z",
+      "engineName": "m1mom-M1-Mom_Midbar_\u002B2-1782857920104",
+      "comment": "m1mom-M1-Mom_Midbar_\u002B2-1782857920104",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628220,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4016.85,
+      "closePrice": 4013.18,
+      "netProfit": 13.58,
+      "balance": 131892.28,
+      "openTimeUtc": "2026-06-30T22:09:25.0610000Z",
+      "closeTimeUtc": "2026-06-30T22:18:49.5900000Z",
+      "engineName": "hedge-d3-S-1782857364045",
+      "comment": "hedge-d3-S-1782857364045",
+      "closeReason": "MANUAL"
+    },
+    {
+      "positionId": 51628217,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4016.9,
+      "closePrice": 4013.08,
+      "netProfit": 14.14,
+      "balance": 131878.7,
+      "openTimeUtc": "2026-06-30T22:09:21.1810000Z",
+      "closeTimeUtc": "2026-06-30T22:18:48.9070000Z",
+      "engineName": "hedge-d3-S-1782857360349",
+      "comment": "hedge-d3-S-1782857360349",
+      "closeReason": "MANUAL"
+    },
+    {
+      "positionId": 51628241,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4017.24,
+      "closePrice": 4013.18,
+      "netProfit": 15.05,
+      "balance": 131864.56,
+      "openTimeUtc": "2026-06-30T22:10:22.3890000Z",
+      "closeTimeUtc": "2026-06-30T22:18:47.4630000Z",
+      "engineName": "hedge-d3-S-1782857422140",
+      "comment": "hedge-d3-S-1782857422140",
+      "closeReason": "MANUAL"
+    },
+    {
+      "positionId": 51628221,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4016.85,
+      "closePrice": 4013.18,
+      "netProfit": 13.58,
+      "balance": 131849.51,
+      "openTimeUtc": "2026-06-30T22:09:26.2270000Z",
+      "closeTimeUtc": "2026-06-30T22:18:46.4850000Z",
+      "engineName": "hedge-d3-S-1782857365271",
+      "comment": "hedge-d3-S-1782857365271",
+      "closeReason": "MANUAL"
+    },
+    {
+      "positionId": 51628222,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4016.84,
+      "closePrice": 4013.65,
+      "netProfit": 11.77,
+      "balance": 131835.93,
+      "openTimeUtc": "2026-06-30T22:09:27.1770000Z",
+      "closeTimeUtc": "2026-06-30T22:18:45.0080000Z",
+      "engineName": "hedge-d3-S-1782857366471",
+      "comment": "hedge-d3-S-1782857366471",
+      "closeReason": "MANUAL"
+    },
+    {
+      "positionId": 51628239,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4017.55,
+      "closePrice": 4013.8,
+      "netProfit": 13.88,
+      "balance": 131824.16,
+      "openTimeUtc": "2026-06-30T22:10:20.1620000Z",
+      "closeTimeUtc": "2026-06-30T22:18:44.3240000Z",
+      "engineName": "hedge-d3-S-1782857419386",
+      "comment": "hedge-d3-S-1782857419386",
+      "closeReason": "MANUAL"
+    },
+    {
+      "positionId": 51628316,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4015.52,
+      "closePrice": 4013.87,
+      "netProfit": 5.96,
+      "balance": 131810.28,
+      "openTimeUtc": "2026-06-30T22:16:30.0920000Z",
+      "closeTimeUtc": "2026-06-30T22:18:43.3580000Z",
+      "engineName": "m1mom-M1-Mom_Midbar_\u002B2-1782857787002",
+      "comment": "m1mom-M1-Mom_Midbar_\u002B2-1782857787002",
+      "closeReason": "MANUAL"
+    },
+    {
+      "positionId": 51628414,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4014.88,
+      "closePrice": 4014.51,
+      "netProfit": -1.66,
+      "balance": 131804.32,
+      "openTimeUtc": "2026-06-30T22:17:45.4630000Z",
+      "closeTimeUtc": "2026-06-30T22:17:52.3110000Z",
+      "engineName": "hedge-d1-B-1782857865237",
+      "comment": "hedge-d1-B-1782857865237",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628396,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4013.96,
+      "closePrice": 4014.88,
+      "netProfit": -3.73,
+      "balance": 131805.98,
+      "openTimeUtc": "2026-06-30T22:17:31.2930000Z",
+      "closeTimeUtc": "2026-06-30T22:17:46.1580000Z",
+      "engineName": "m1mom-M1-Mom_Midbar_\u002B2-1782857847197",
+      "comment": "m1mom-M1-Mom_Midbar_\u002B2-1782857847197",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628296,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4016.2,
+      "closePrice": 4014.15,
+      "netProfit": 7.47,
+      "balance": 131809.71,
+      "openTimeUtc": "2026-06-30T22:16:12.9740000Z",
+      "closeTimeUtc": "2026-06-30T22:17:27.2220000Z",
+      "engineName": "hedge-d1-S-1782857772726",
+      "comment": "hedge-d1-S-1782857772726",
+      "closeReason": "MANUAL"
+    },
+    {
+      "positionId": 51628300,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4016.35,
+      "closePrice": 4014.3,
+      "netProfit": 7.47,
+      "balance": 131802.24,
+      "openTimeUtc": "2026-06-30T22:16:15.0330000Z",
+      "closeTimeUtc": "2026-06-30T22:17:13.0900000Z",
+      "engineName": "hedge-d1-S-1782857774067",
+      "comment": "hedge-d1-S-1782857774067",
+      "closeReason": "MANUAL"
+    },
+    {
+      "positionId": 51628298,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4016.28,
+      "closePrice": 4014.25,
+      "netProfit": 7.4,
+      "balance": 131794.77,
+      "openTimeUtc": "2026-06-30T22:16:13.8620000Z",
+      "closeTimeUtc": "2026-06-30T22:17:12.3470000Z",
+      "engineName": "hedge-d1-S-1782857773167",
+      "comment": "hedge-d1-S-1782857773167",
+      "closeReason": "MANUAL"
+    },
+    {
+      "positionId": 51628285,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4016.53,
+      "closePrice": 4016.36,
+      "netProfit": -0.9,
+      "balance": 131787.37,
+      "openTimeUtc": "2026-06-30T22:16:02.5930000Z",
+      "closeTimeUtc": "2026-06-30T22:16:15.9930000Z",
+      "engineName": "m1mom-M1-Mom_Close_\u002B2-1782857761414",
+      "comment": "m1mom-M1-Mom_Close_\u002B2-1782857761414",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628282,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4016.48,
+      "closePrice": 4016.35,
+      "netProfit": -0.75,
+      "balance": 131788.27,
+      "openTimeUtc": "2026-06-30T22:16:00.8860000Z",
+      "closeTimeUtc": "2026-06-30T22:16:14.7780000Z",
+      "engineName": "m1mom-M1-Mom_Close_\u002B2-1782857760632",
+      "comment": "m1mom-M1-Mom_Close_\u002B2-1782857760632",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628281,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4016.48,
+      "closePrice": 4016.18,
+      "netProfit": -1.39,
+      "balance": 131789.02,
+      "openTimeUtc": "2026-06-30T22:16:00.7940000Z",
+      "closeTimeUtc": "2026-06-30T22:16:13.6600000Z",
+      "engineName": "m1mom-M1-Mom_Midbar_\u002B2-1782857759998",
+      "comment": "m1mom-M1-Mom_Midbar_\u002B2-1782857759998",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628232,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4016.93,
+      "closePrice": 4014.16,
+      "netProfit": 10.19,
+      "balance": 131790.41,
+      "openTimeUtc": "2026-06-30T22:10:03.1600000Z",
+      "closeTimeUtc": "2026-06-30T22:13:50.5460000Z",
+      "engineName": "hedge-d1-S-1782857402173",
+      "comment": "hedge-d1-S-1782857402173",
+      "closeReason": "MANUAL"
+    },
+    {
+      "positionId": 51628237,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017.36,
+      "closePrice": 4017.35,
+      "netProfit": -0.3,
+      "balance": 131780.22,
+      "openTimeUtc": "2026-06-30T22:10:16.8810000Z",
+      "closeTimeUtc": "2026-06-30T22:10:23.1950000Z",
+      "engineName": "hedge-d2-B-1782857416606",
+      "comment": "hedge-d2-B-1782857416606",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628238,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017.78,
+      "closePrice": 4017.48,
+      "netProfit": -1.39,
+      "balance": 131780.52,
+      "openTimeUtc": "2026-06-30T22:10:18.1180000Z",
+      "closeTimeUtc": "2026-06-30T22:10:21.1200000Z",
+      "engineName": "hedge-d2-B-1782857417817",
+      "comment": "hedge-d2-B-1782857417817",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628233,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4016.46,
+      "closePrice": 4017.72,
+      "netProfit": -5.01,
+      "balance": 131781.91,
+      "openTimeUtc": "2026-06-30T22:10:04.2950000Z",
+      "closeTimeUtc": "2026-06-30T22:10:19.1540000Z",
+      "engineName": "hedge-d1-S-1782857403351",
+      "comment": "hedge-d1-S-1782857403351",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628234,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4016.22,
+      "closePrice": 4017.82,
+      "netProfit": -6.29,
+      "balance": 131786.92,
+      "openTimeUtc": "2026-06-30T22:10:05.9470000Z",
+      "closeTimeUtc": "2026-06-30T22:10:17.6420000Z",
+      "engineName": "hedge-d1-S-1782857405704",
+      "comment": "hedge-d1-S-1782857405704",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628230,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017.1,
+      "closePrice": 4016.2,
+      "netProfit": -3.65,
+      "balance": 131793.21,
+      "openTimeUtc": "2026-06-30T22:10:02.9440000Z",
+      "closeTimeUtc": "2026-06-30T22:10:06.6200000Z",
+      "engineName": "hedge-d0-B-1782857402173",
+      "comment": "hedge-d0-B-1782857402173",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628226,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017.59,
+      "closePrice": 4016.22,
+      "netProfit": -5.43,
+      "balance": 131796.86,
+      "openTimeUtc": "2026-06-30T22:10:00.7280000Z",
+      "closeTimeUtc": "2026-06-30T22:10:05.4880000Z",
+      "engineName": "m1mom-M1-Mom_Close_\u002B2-1782857400492",
+      "comment": "m1mom-M1-Mom_Close_\u002B2-1782857400492",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628227,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017.72,
+      "closePrice": 4016.46,
+      "netProfit": -5.01,
+      "balance": 131802.29,
+      "openTimeUtc": "2026-06-30T22:10:01.6010000Z",
+      "closeTimeUtc": "2026-06-30T22:10:04.0680000Z",
+      "engineName": "m1mom-M1-Mom_Close_\u002B2-1782857400795",
+      "comment": "m1mom-M1-Mom_Close_\u002B2-1782857400795",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628200,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4016.46,
+      "closePrice": 4017.72,
+      "netProfit": -5.01,
+      "balance": 131807.3,
+      "openTimeUtc": "2026-06-30T22:08:29.9460000Z",
+      "closeTimeUtc": "2026-06-30T22:10:01.7100000Z",
+      "engineName": "hedge-d8-S-1782857308881",
+      "comment": "hedge-d8-S-1782857308881",
+      "closeReason": "MANUAL"
+    },
+    {
+      "positionId": 51628215,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017.18,
+      "closePrice": 4016.84,
+      "netProfit": -1.54,
+      "balance": 131812.31,
+      "openTimeUtc": "2026-06-30T22:09:18.9690000Z",
+      "closeTimeUtc": "2026-06-30T22:09:27.9110000Z",
+      "engineName": "hedge-d2-B-1782857357943",
+      "comment": "hedge-d2-B-1782857357943",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628214,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017.29,
+      "closePrice": 4016.84,
+      "netProfit": -1.96,
+      "balance": 131813.85,
+      "openTimeUtc": "2026-06-30T22:09:17.6990000Z",
+      "closeTimeUtc": "2026-06-30T22:09:26.9630000Z",
+      "engineName": "hedge-d2-B-1782857356751",
+      "comment": "hedge-d2-B-1782857356751",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628213,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017.31,
+      "closePrice": 4016.85,
+      "netProfit": -1.99,
+      "balance": 131815.81,
+      "openTimeUtc": "2026-06-30T22:09:16.5530000Z",
+      "closeTimeUtc": "2026-06-30T22:09:26.0160000Z",
+      "engineName": "hedge-d2-B-1782857355518",
+      "comment": "hedge-d2-B-1782857355518",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628211,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017.37,
+      "closePrice": 4016.85,
+      "netProfit": -2.22,
+      "balance": 131817.8,
+      "openTimeUtc": "2026-06-30T22:09:15.3490000Z",
+      "closeTimeUtc": "2026-06-30T22:09:24.7970000Z",
+      "engineName": "hedge-d6-B-1782857354336",
+      "comment": "hedge-d6-B-1782857354336",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628210,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017.27,
+      "closePrice": 4016.73,
+      "netProfit": -2.3,
+      "balance": 131820.02,
+      "openTimeUtc": "2026-06-30T22:09:14.1460000Z",
+      "closeTimeUtc": "2026-06-30T22:09:23.5760000Z",
+      "engineName": "hedge-d6-B-1782857353450",
+      "comment": "hedge-d6-B-1782857353450",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628208,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017.32,
+      "closePrice": 4016.74,
+      "netProfit": -2.45,
+      "balance": 131822.32,
+      "openTimeUtc": "2026-06-30T22:09:13.2470000Z",
+      "closeTimeUtc": "2026-06-30T22:09:22.3910000Z",
+      "engineName": "hedge-d2-B-1782857352785",
+      "comment": "hedge-d2-B-1782857352785",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628206,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017.25,
+      "closePrice": 4016.9,
+      "netProfit": -1.58,
+      "balance": 131824.77,
+      "openTimeUtc": "2026-06-30T22:09:12.5830000Z",
+      "closeTimeUtc": "2026-06-30T22:09:20.9180000Z",
+      "engineName": "hedge-d7-B-1782857351850",
+      "comment": "hedge-d7-B-1782857351850",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628182,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4015.97,
+      "closePrice": 4017.05,
+      "netProfit": -4.33,
+      "balance": 131826.35,
+      "openTimeUtc": "2026-06-30T22:06:01.1980000Z",
+      "closeTimeUtc": "2026-06-30T22:09:19.6670000Z",
+      "engineName": "hedge-d1-S-1782857160961",
+      "comment": "hedge-d1-S-1782857160961",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628186,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4016,
+      "closePrice": 4017.18,
+      "netProfit": -4.71,
+      "balance": 131830.68,
+      "openTimeUtc": "2026-06-30T22:06:03.1680000Z",
+      "closeTimeUtc": "2026-06-30T22:09:18.7600000Z",
+      "engineName": "hedge-d1-S-1782857162350",
+      "comment": "hedge-d1-S-1782857162350",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628170,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4015.9,
+      "closePrice": 4017.29,
+      "netProfit": -5.5,
+      "balance": 131835.39,
+      "openTimeUtc": "2026-06-30T22:05:56.9250000Z",
+      "closeTimeUtc": "2026-06-30T22:09:17.4640000Z",
+      "engineName": "hedge-d1-S-1782857156653",
+      "comment": "hedge-d1-S-1782857156653",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628190,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4015.86,
+      "closePrice": 4017.31,
+      "netProfit": -5.73,
+      "balance": 131840.89,
+      "openTimeUtc": "2026-06-30T22:06:13.2780000Z",
+      "closeTimeUtc": "2026-06-30T22:09:16.3340000Z",
+      "engineName": "hedge-d5-S-1782857172207",
+      "comment": "hedge-d5-S-1782857172207",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628167,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4015.89,
+      "closePrice": 4017.38,
+      "netProfit": -5.88,
+      "balance": 131846.62,
+      "openTimeUtc": "2026-06-30T22:05:41.9110000Z",
+      "closeTimeUtc": "2026-06-30T22:09:15.1180000Z",
+      "engineName": "hedge-d5-S-1782857141656",
+      "comment": "hedge-d5-S-1782857141656",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628160,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4015.86,
+      "closePrice": 4017.27,
+      "netProfit": -5.58,
+      "balance": 131852.5,
+      "openTimeUtc": "2026-06-30T22:05:20.0360000Z",
+      "closeTimeUtc": "2026-06-30T22:09:13.8820000Z",
+      "engineName": "hedge-d1-S-1782857119293",
+      "comment": "hedge-d1-S-1782857119293",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628189,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4015.81,
+      "closePrice": 4017.32,
+      "netProfit": -5.95,
+      "balance": 131858.08,
+      "openTimeUtc": "2026-06-30T22:06:11.9940000Z",
+      "closeTimeUtc": "2026-06-30T22:09:13.0340000Z",
+      "engineName": "hedge-d6-S-1782857171187",
+      "comment": "hedge-d6-S-1782857171187",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628198,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4017,
+      "closePrice": 4016.34,
+      "netProfit": -2.75,
+      "balance": 131864.03,
+      "openTimeUtc": "2026-06-30T22:08:27.6370000Z",
+      "closeTimeUtc": "2026-06-30T22:08:30.9170000Z",
+      "engineName": "hedge-d7-B-1782857307407",
+      "comment": "hedge-d7-B-1782857307407",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628162,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4015.71,
+      "closePrice": 4016.62,
+      "netProfit": -3.69,
+      "balance": 131866.78,
+      "openTimeUtc": "2026-06-30T22:05:24.0630000Z",
+      "closeTimeUtc": "2026-06-30T22:08:28.3630000Z",
+      "engineName": "hedge-d6-S-1782857123613",
+      "comment": "hedge-d6-S-1782857123613",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628188,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4016.25,
+      "closePrice": 4015.85,
+      "netProfit": -1.77,
+      "balance": 131870.47,
+      "openTimeUtc": "2026-06-30T22:06:10.0840000Z",
+      "closeTimeUtc": "2026-06-30T22:06:14.1920000Z",
+      "engineName": "hedge-d4-B-1782857169380",
+      "comment": "hedge-d4-B-1782857169380",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628187,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4016.35,
+      "closePrice": 4015.86,
+      "netProfit": -2.11,
+      "balance": 131872.24,
+      "openTimeUtc": "2026-06-30T22:06:09.1950000Z",
+      "closeTimeUtc": "2026-06-30T22:06:13.0080000Z",
+      "engineName": "hedge-d5-B-1782857168903",
+      "comment": "hedge-d5-B-1782857168903",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628165,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4015.29,
+      "closePrice": 4016.01,
+      "netProfit": -2.97,
+      "balance": 131874.35,
+      "openTimeUtc": "2026-06-30T22:05:38.4860000Z",
+      "closeTimeUtc": "2026-06-30T22:06:10.7380000Z",
+      "engineName": "hedge-d3-S-1782857137713",
+      "comment": "hedge-d3-S-1782857137713",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628163,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4015.22,
+      "closePrice": 4016.25,
+      "netProfit": -4.14,
+      "balance": 131877.32,
+      "openTimeUtc": "2026-06-30T22:05:36.6190000Z",
+      "closeTimeUtc": "2026-06-30T22:06:09.8760000Z",
+      "engineName": "hedge-d4-S-1782857136369",
+      "comment": "hedge-d4-S-1782857136369",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628183,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4016.14,
+      "closePrice": 4016.11,
+      "netProfit": -0.37,
+      "balance": 131881.46,
+      "openTimeUtc": "2026-06-30T22:06:02.2160000Z",
+      "closeTimeUtc": "2026-06-30T22:06:04.4270000Z",
+      "engineName": "m1mom-M1-Mom_Close_\u002B2-1782857161495",
+      "comment": "m1mom-M1-Mom_Close_\u002B2-1782857161495",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628181,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4016.14,
+      "closePrice": 4015.97,
+      "netProfit": -0.9,
+      "balance": 131881.83,
+      "openTimeUtc": "2026-06-30T22:06:00.7770000Z",
+      "closeTimeUtc": "2026-06-30T22:06:01.9320000Z",
+      "engineName": "m1mom-M1-Mom_Close_\u002B2-1782857160509",
+      "comment": "m1mom-M1-Mom_Close_\u002B2-1782857160509",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628169,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4016.26,
+      "closePrice": 4015.9,
+      "netProfit": -1.62,
+      "balance": 131882.73,
+      "openTimeUtc": "2026-06-30T22:05:56.4730000Z",
+      "closeTimeUtc": "2026-06-30T22:05:57.6400000Z",
+      "engineName": "m1mom-M1-Mom_Midbar_\u002B2-1782857156239",
+      "comment": "m1mom-M1-Mom_Midbar_\u002B2-1782857156239",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628166,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4016.14,
+      "closePrice": 4015.89,
+      "netProfit": -1.2,
+      "balance": 131884.35,
+      "openTimeUtc": "2026-06-30T22:05:40.5320000Z",
+      "closeTimeUtc": "2026-06-30T22:05:42.6600000Z",
+      "engineName": "hedge-d4-B-1782857139752",
+      "comment": "hedge-d4-B-1782857139752",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628164,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4014.84,
+      "closePrice": 4016.1,
+      "netProfit": -5.01,
+      "balance": 131885.55,
+      "openTimeUtc": "2026-06-30T22:05:37.5090000Z",
+      "closeTimeUtc": "2026-06-30T22:05:41.1620000Z",
+      "engineName": "hedge-d3-S-1782857136789",
+      "comment": "hedge-d3-S-1782857136789",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628154,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4015.34,
+      "closePrice": 4015.3,
+      "netProfit": -0.41,
+      "balance": 131890.56,
+      "openTimeUtc": "2026-06-30T22:05:13.1490000Z",
+      "closeTimeUtc": "2026-06-30T22:05:39.3630000Z",
+      "engineName": "hedge-d2-B-1782857112453",
+      "comment": "hedge-d2-B-1782857112453",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628153,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4015.32,
+      "closePrice": 4015.29,
+      "netProfit": -0.37,
+      "balance": 131890.97,
+      "openTimeUtc": "2026-06-30T22:05:12.2640000Z",
+      "closeTimeUtc": "2026-06-30T22:05:38.2800000Z",
+      "engineName": "hedge-d2-B-1782857111349",
+      "comment": "hedge-d2-B-1782857111349",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628152,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4015.36,
+      "closePrice": 4014.84,
+      "netProfit": -2.22,
+      "balance": 131891.34,
+      "openTimeUtc": "2026-06-30T22:05:11.1170000Z",
+      "closeTimeUtc": "2026-06-30T22:05:37.2490000Z",
+      "engineName": "hedge-d3-B-1782857110553",
+      "comment": "hedge-d3-B-1782857110553",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628155,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4015.91,
+      "closePrice": 4015.68,
+      "netProfit": -1.13,
+      "balance": 131893.56,
+      "openTimeUtc": "2026-06-30T22:05:14.3110000Z",
+      "closeTimeUtc": "2026-06-30T22:05:24.7840000Z",
+      "engineName": "hedge-d5-B-1782857113322",
+      "comment": "hedge-d5-B-1782857113322",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628156,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4016.54,
+      "closePrice": 4016.07,
+      "netProfit": -2.03,
+      "balance": 131894.69,
+      "openTimeUtc": "2026-06-30T22:05:18.5930000Z",
+      "closeTimeUtc": "2026-06-30T22:05:20.5450000Z",
+      "engineName": "m1mom-M1-Mom_Midbar_\u002B2-1782857117586",
+      "comment": "m1mom-M1-Mom_Midbar_\u002B2-1782857117586",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628138,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4014.09,
+      "closePrice": 4016.5,
+      "netProfit": -9.35,
+      "balance": 131896.72,
+      "openTimeUtc": "2026-06-30T22:04:59.3280000Z",
+      "closeTimeUtc": "2026-06-30T22:05:15.2610000Z",
+      "engineName": "hedge-d4-S-1782857098586",
+      "comment": "hedge-d4-S-1782857098586",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628088,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4013.72,
+      "closePrice": 4015.91,
+      "netProfit": -8.52,
+      "balance": 131906.07,
+      "openTimeUtc": "2026-06-30T22:02:27.8130000Z",
+      "closeTimeUtc": "2026-06-30T22:05:14.0830000Z",
+      "engineName": "hedge-d1-S-1782856947567",
+      "comment": "hedge-d1-S-1782856947567",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628095,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4014.16,
+      "closePrice": 4015.32,
+      "netProfit": -4.63,
+      "balance": 131914.59,
+      "openTimeUtc": "2026-06-30T22:03:04.2960000Z",
+      "closeTimeUtc": "2026-06-30T22:05:12.9350000Z",
+      "engineName": "hedge-d1-S-1782856983819",
+      "comment": "hedge-d1-S-1782856983819",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628137,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4014.16,
+      "closePrice": 4015.32,
+      "netProfit": -4.63,
+      "balance": 131919.22,
+      "openTimeUtc": "2026-06-30T22:04:58.3960000Z",
+      "closeTimeUtc": "2026-06-30T22:05:12.0350000Z",
+      "engineName": "hedge-d2-S-1782857097723",
+      "comment": "hedge-d2-S-1782857097723",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628136,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4014.4,
+      "closePrice": 4014.07,
+      "netProfit": -1.5,
+      "balance": 131923.85,
+      "openTimeUtc": "2026-06-30T22:04:56.5040000Z",
+      "closeTimeUtc": "2026-06-30T22:05:00.3690000Z",
+      "engineName": "hedge-d3-B-1782857095772",
+      "comment": "hedge-d3-B-1782857095772",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628135,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4014.4,
+      "closePrice": 4014.14,
+      "netProfit": -1.24,
+      "balance": 131925.35,
+      "openTimeUtc": "2026-06-30T22:04:55.5670000Z",
+      "closeTimeUtc": "2026-06-30T22:04:59.0790000Z",
+      "engineName": "hedge-d1-B-1782857095265",
+      "comment": "hedge-d1-B-1782857095265",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51627971,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4006.87,
+      "closePrice": 4014.4,
+      "netProfit": -27.56,
+      "balance": 131926.59,
+      "openTimeUtc": "2026-06-30T22:04:57.2640000Z",
+      "closeTimeUtc": "2026-06-30T22:04:57.2640000Z",
+      "engineName": "hedge-d2-S-1782853061599",
+      "comment": "hedge-d2-S-1782853061599",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51627963,
+      "side": "SELL",
+      "lots": 0.05,
+      "openPrice": 4007.25,
+      "closePrice": 4014.4,
+      "netProfit": -26.13,
+      "balance": 131954.15,
+      "openTimeUtc": "2026-06-30T22:04:56.2890000Z",
+      "closeTimeUtc": "2026-06-30T22:04:56.2890000Z",
+      "engineName": "m1mom-M1-Mom_Midbar_\u002B2-1782853025100",
+      "comment": "m1mom-M1-Mom_Midbar_\u002B2-1782853025100",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628092,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4014.29,
+      "closePrice": 4013.82,
+      "netProfit": -2.03,
+      "balance": 131980.28,
+      "openTimeUtc": "2026-06-30T22:03:03.0000000Z",
+      "closeTimeUtc": "2026-06-30T22:03:05.2460000Z",
+      "engineName": "m1mom-M1-Mom_Close_\u002B2-1782856982699",
+      "comment": "m1mom-M1-Mom_Close_\u002B2-1782856982699",
+      "closeReason": "TIME_EXIT"
+    },
+    {
+      "positionId": 51628085,
+      "side": "BUY",
+      "lots": 0.05,
+      "openPrice": 4013.99,
+      "closePrice": 4013.72,
+      "netProfit": -1.28,
+      "balance": 131982.31,
+      "openTimeUtc": "2026-06-30T22:02:27.3960000Z",
+      "closeTimeUtc": "2026-06-30T22:02:28.5080000Z",
+      "engineName": "m1mom-M1-Mom_Midbar_\u002B2-1782856947199",
+      "comment": "m1mom-M1-Mom_Midbar_\u002B2-1782856947199",
+      "closeReason": "TIME_EXIT"
+    }
+  ],
+  "execBrokerConnected": true,
+  "orderFlow": {
+    "tickImbalance": 0.15625,
+    "upTicks": 37,
+    "downTicks": 27,
+    "hasBuyVacuum": false,
+    "hasSellVacuum": false,
+    "depthFeedLive": false
+  },
+  "m1Momentum": "M1-Mom Close \u002B2 \u00B7 Sell @ 4013.68 \u00B7 -1.7pt M1 close body \u00B7 22:19:02Z"
+}
