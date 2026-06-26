@@ -1,0 +1,3544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoldBot · M15 Bar Feed</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #030a14;
+  color: #cbd5e1;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  min-height: 100vh;
+}
+.mono { font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace; }
+
+/* ── Header ───────────────────────────────────────────────────────────── */
+header {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(3,10,20,0.97);
+  border-bottom: 1px solid #0f2035;
+  backdrop-filter: blur(10px);
+  padding: 0 22px;
+  height: 56px;
+  display: flex; align-items: center; gap: 14px;
+}
+.hdr-logo { font-size: 18px; }
+.hdr-name { font-size: 14px; font-weight: 700; color: #e2e8f0; letter-spacing: -0.01em; }
+.hdr-sub  { font-size: 11px; font-weight: 600; color: #475569; letter-spacing: 0.06em; text-transform: uppercase; }
+.hdr-div  { width: 1px; height: 26px; background: #0f2035; }
+.hdr-price { font-size: 22px; font-weight: 800; font-family: ui-monospace, monospace; color: #fde047; letter-spacing: -0.02em; }
+.hdr-spread {
+  margin-left: 14px; padding: 4px 10px; border-radius: 5px;
+  font-size: 12px; font-weight: 700; font-family: ui-monospace, monospace;
+  letter-spacing: 0.04em; background: rgba(148,163,184,0.10); color: #cbd5e1;
+  border: 1px solid rgba(148,163,184,0.18);
+}
+.hdr-spread.normal   { background: rgba(34,197,94,0.10);  color: #4ade80; border-color: rgba(34,197,94,0.30); }
+.hdr-spread.wide     { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.35); }
+.hdr-spread.extreme  { background: rgba(239,68,68,0.15);  color: #f87171; border-color: rgba(239,68,68,0.40); }
+.hdr-spread.broken,
+.hdr-spread.unknown  { background: rgba(148,163,184,0.10); color: #94a3b8; border-color: rgba(148,163,184,0.25); }
+.hdr-right { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 11px; color: #64748b; }
+
+.dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+.dot-live { background: #34d399; animation: blink 2s ease-in-out infinite; }
+.dot-off  { background: #334155; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* ── Container ────────────────────────────────────────────────────────── */
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+/* ── Empty state ──────────────────────────────────────────────────────── */
+.empty-card {
+  background: linear-gradient(180deg, #0a1628 0%, #061018 100%);
+  border: 1px solid #0f2035;
+  border-radius: 14px;
+  padding: 36px 28px;
+  text-align: center;
+}
+.empty-icon  { font-size: 38px; margin-bottom: 10px; }
+.empty-title { font-size: 16px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; }
+.empty-sub   { font-size: 12px; color: #475569; margin-bottom: 14px; }
+.empty-code  {
+  display: inline-block;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  background: #020812;
+  color: #64748b;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #0f2035;
+}
+
+/* ── Last 15-min bar panel ────────────────────────────────────────── */
+.bar-panel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+/* ── 5-min outlook strip (volatility regime + direction) ───────────── */
+.staleness-banner {
+  background: rgba(239,68,68,0.18);
+  color: #fca5a5;
+  border: 1px solid rgba(239,68,68,0.5);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+.hitrate-banner {
+  background: rgba(245,158,11,0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245,158,11,0.5);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-weight: 700;
+  font-size: 13px;
+}
+/* ── Oanda broker account panel ────────────────────────────────────────── */
+.oanda-account-card {
+  background: linear-gradient(180deg, #0c1626 0%, #081120 100%);
+  border: 1px solid #1e3a5f;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+.oac-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #0f2035;
+}
+.oac-badge {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 3px 8px; border-radius: 4px;
+  background: rgba(34,197,94,0.15); color: #4ade80;
+  border: 1px solid rgba(34,197,94,0.40);
+}
+.oac-badge.live { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.45); }
+.oac-badge.pepper { background: rgba(249,115,22,0.15); color: #fb923c; border-color: rgba(249,115,22,0.45); }
+.manual-trade { margin: -4px 0 14px; padding: 12px 16px; background: linear-gradient(180deg,#0c1626 0%,#081120 100%); border: 1px solid #1e3a5f; border-radius: 10px; }
+.manual-trade .mt-buttons { display: flex; gap: 10px; }
+.manual-trade .mt-btn { flex: 1; padding: 12px 0; border: none; border-radius: 8px; font-size: 15px; font-weight: 800; letter-spacing: 1px; cursor: pointer; transition: filter .12s, transform .05s; }
+.manual-trade .mt-btn:active { transform: translateY(1px); }
+.manual-trade .mt-btn:hover { filter: brightness(1.12); }
+.manual-trade .mt-btn:disabled { opacity: .5; cursor: default; filter: none; }
+.manual-trade .mt-buy  { background: #16a34a; color: #f0fff4; }
+.manual-trade .mt-sell { background: #dc2626; color: #fff5f5; }
+.manual-trade .mt-close { background: #475569; color: #e2e8f0; }
+.manual-trade .mt-meta { margin-top: 8px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.manual-trade .mt-bracket { font-family: ui-monospace, monospace; font-size: 10px; color: #64748b; }
+.manual-trade .mt-status { font-family: ui-monospace, monospace; font-size: 11px; color: #94a3b8; }
+.manual-trade .mt-status.ok  { color: #4ade80; }
+.manual-trade .mt-status.err { color: #f87171; }
+
+/* ── Open cTrader positions — full horizontal cards with a big close button ── */
+.oac-positions { margin-top: 12px; padding-top: 10px; border-top: 1px solid #0f2035; display: flex; flex-direction: column; gap: 10px; }
+.oac-pos-row {
+  display: flex; align-items: center; gap: 14px;
+  background: #0c1626; border: 1px solid #1e293b; border-left: 4px solid #475569;
+  border-radius: 12px; padding: 14px 16px; color: #e2e8f0;
+}
+.oac-pos-row.buy  { border-left-color: #22c55e; }
+.oac-pos-row.sell { border-left-color: #ef4444; }
+.oac-pos-row .pos-side { font-size: 16px; font-weight: 800; min-width: 48px; letter-spacing: 0.5px; }
+.oac-pos-row .pos-side.buy  { color: #4ade80; }
+.oac-pos-row .pos-side.sell { color: #f87171; }
+.oac-pos-row .pos-info  { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.oac-pos-row .pos-line1 { font-size: 15px; font-weight: 600; color: #f1f5f9; }
+.oac-pos-row .pos-line2 { font-size: 12px; color: #64748b; font-family: ui-monospace, monospace; }
+.oac-pos-row .pos-float { font-weight: 700; margin-left: 6px; }
+.oac-pos-row .pos-float.pos { color: #4ade80; }
+.oac-pos-row .pos-float.neg { color: #f87171; }
+/* Ladder cross-check levels — exact TP/SL prices to find on the CMC depth ladder */
+.oac-pos-row .pos-ladder { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; }
+.oac-pos-row .pos-lvl { white-space: nowrap; }
+.oac-pos-row .pos-lvl b { font-size: 15px; font-weight: 800; letter-spacing: 0.3px; }
+.oac-pos-row .pos-lvl.tp b { color: #fcd34d; }
+.oac-pos-row .pos-lvl.sl b { color: #f87171; }
+.oac-pos-row .pos-dist { color: #64748b; font-size: 11px; }
+.oac-pos-row .pos-close {
+  padding: 12px 24px; border: none; border-radius: 10px;
+  background: #dc2626; color: #fff5f5; font-size: 15px; font-weight: 800; letter-spacing: 0.5px;
+  cursor: pointer; transition: filter .12s, transform .05s; white-space: nowrap;
+}
+.oac-pos-row .pos-close:hover  { filter: brightness(1.12); }
+.oac-pos-row .pos-close:active { transform: translateY(1px); }
+.oac-id { font-family: ui-monospace, monospace; font-size: 12px; color: #94a3b8; }
+.oac-fresh { margin-left: auto; font-size: 10px; color: #475569; font-family: ui-monospace, monospace; }
+.oac-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 800px) { .oac-grid { grid-template-columns: repeat(2, 1fr); } }
+.oac-stat .oac-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+.oac-stat .oac-value {
+  font-family: ui-monospace, monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+.oac-stat .oac-value.pos { color: #4ade80; }
+.oac-stat .oac-value.neg { color: #f87171; }
+.oac-stat .oac-value.warn { color: #fbbf24; }
+.oac-stat .oac-sub {
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.paper-pnl-card {
+  background: #0c1626;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.paper-pnl-card .ppl-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 10px;
+  align-items: start;
+}
+.paper-pnl-card .ppl-stat.ppl-razor { border-left: 1px solid #1e293b; padding-left: 22px; }
+.paper-pnl-card .ppl-razor .ppl-razor-sub { margin-top: 6px; color: #64748b; font-size: 12px; font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace; }
+.paper-pnl-card .ppl-razor .ppl-razor-note { margin-top: 6px; color: #475569; font-size: 10px; }
+@media (max-width: 800px) { .paper-pnl-card .ppl-stat.ppl-razor { border-left: 0; padding-left: 0; border-top: 1px solid #1e293b; padding-top: 12px; } }
+@media (max-width: 800px) { .paper-pnl-card .ppl-row { grid-template-columns: 1fr; gap: 14px; } }
+.paper-pnl-card .ppl-stat .ppl-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+.paper-pnl-card .ppl-stat .ppl-value {
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+.paper-pnl-card .ppl-stat .ppl-value.pos { color: #4ade80; }
+.paper-pnl-card .ppl-stat .ppl-value.neg { color: #f87171; }
+.paper-pnl-card .ppl-stat .ppl-value.warn { color: #fbbf24; }
+.paper-pnl-card .ppl-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 11px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+}
+.paper-pnl-card .ppl-chips .chip {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 3px 8px;
+  color: #cbd5e1;
+}
+.paper-pnl-card .ppl-chips .chip b { color: #e2e8f0; font-weight: 700; }
+.paper-pnl-card .ppl-chips .chip.pos b { color: #4ade80; }
+.paper-pnl-card .ppl-chips .chip.neg b { color: #f87171; }
+/* Right column: real account-level P&L (Oanda NAV delta) — broker truth, shown
+   side-by-side with the paper/points column. £ primary, points subtitle. */
+.paper-pnl-card .ppl-stat-real { border-left: 1px solid #1e293b; padding-left: 22px; }
+.paper-pnl-card .ppl-sublabel { color: #475569; text-transform: none; letter-spacing: 0; font-size: 9px; }
+.paper-pnl-card .ppl-real-sub { margin-top: 6px; color: #64748b; font-size: 12px; font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace; }
+/* Mains-vs-subs split of the real account total (£ each, they sum to total). */
+.paper-pnl-card .ppl-real-split { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; font-size: 11px; font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace; }
+.paper-pnl-card .ppl-real-split .chip { background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 3px 8px; color: #cbd5e1; }
+.paper-pnl-card .ppl-real-split .chip b { color: #e2e8f0; font-weight: 700; }
+.paper-pnl-card .ppl-real-split .chip.pos b { color: #4ade80; }
+.paper-pnl-card .ppl-real-split .chip.neg b { color: #f87171; }
+@media (max-width: 800px) {
+  .paper-pnl-card .ppl-stat-real { border-left: 0; padding-left: 0; border-top: 1px solid #1e293b; padding-top: 12px; }
+}
+.paper-pnl-card .ppl-spark {
+  width: 100%;
+  height: 60px;
+  display: block;
+}
+.m5-strip {
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+  background: #0b1a2e;
+  border: 1px solid #1e3a5f;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* ── Mid-bar guidance — two side-by-side tiles (1-min / 2-min) ─────────── */
+.midbar-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+@media (max-width: 720px) { .midbar-wrap { grid-template-columns: 1fr; } }
+.midbar-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  padding: 0 2px;
+}
+.midbar-header .mh-meta { display: flex; gap: 14px; }
+.midbar-header b { color:#cbd5e1; font-weight: 700; }
+.midbar-header .mh-progress {
+  width: 100%;
+  height: 4px;
+  background: rgba(148,163,184,0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 6px;
+  grid-column: 1 / -1;
+}
+.midbar-header .mh-progress > div {
+  height: 100%;
+  background: linear-gradient(90deg,#38bdf8,#22c55e);
+  transition: width 0.5s;
+}
+.midbar-tile {
+  border-radius: 14px;
+  padding: 18px 20px;
+  background: #0c1626;
+  border: 1px solid #1e3a5f;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: background 0.3s, border-color 0.3s;
+}
+.midbar-tile.waiting { background:#0c1626; border-color:#334155; opacity: 0.75; }
+.midbar-tile.act     { background:#0f2a1a; border-color:#166534; }
+.midbar-tile.flip    { background:#2a1010; border-color:#991b1b; }
+.midbar-tile.skip    { background:#1a1a0c; border-color:#854d0e; }
+.midbar-tile.hold    { background:#0b1a2e; border-color:#1e3a5f; }
+.midbar-tile .mt-phase {
+  font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase;
+  color: #94a3b8;
+  background: rgba(148,163,184,0.15);
+  padding: 3px 8px; border-radius: 4px;
+  align-self: flex-start;
+  font-weight: 700;
+}
+.midbar-tile .mt-label {
+  font-size: 22px; font-weight: 800; letter-spacing: 0.5px;
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 2px;
+}
+.midbar-tile .mt-icon { font-size: 26px; }
+.midbar-tile .mt-context {
+  color:#cbd5e1; font-size: 13px; line-height: 1.4;
+}
+.midbar-tile .mt-bardir {
+  font-size: 10px; letter-spacing: 0.4px; color: #64748b;
+  text-transform: uppercase; margin-top: 2px;
+}
+.midbar-tile .mt-bardir b { color: #cbd5e1; font-weight: 700; }
+.midbar-tile .mt-time {
+  margin-left: 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.4px;
+  color: #fbbf24;
+}
+
+/* ── "Take this trade?" decision tile — horizontal, green/red tick columns ── */
+.dec-card {
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: #0c1626;
+  border: 1px solid #1e293b;
+  margin-bottom: 18px;
+}
+.dec-verdict {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+.dec-verdict.go    { background:#0f2a1a; border:1px solid #166534; color:#4ade80; }
+.dec-verdict.wait  { background:#1a1a0c; border:1px solid #854d0e; color:#fbbf24; }
+.dec-verdict.avoid { background:#2a1010; border:1px solid #991b1b; color:#f87171; }
+.dec-verdict .dv-dir   { font-size: 15px; font-weight: 700; color:#cbd5e1; }
+.dec-verdict .dv-why   { font-size: 12px; font-weight: 500; color:#94a3b8; margin-left:auto; text-align:right; max-width:48%; }
+.dec-verdict .dv-score { font-size: 13px; font-weight: 700; opacity: 0.85; }
+
+.dec-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 900px) { .dec-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .dec-grid { grid-template-columns: 1fr; } }
+.dec-col {
+  background: #0b1320;
+  border: 1px solid #16202f;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.dec-col-title {
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.dec-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #131c2b;
+}
+.dec-row:last-child { border-bottom: none; }
+.dec-tick { font-size: 15px; width: 18px; text-align: center; flex: none; }
+.dec-tick.ok   { color: #22c55e; }
+.dec-tick.bad  { color: #ef4444; }
+.dec-tick.warn { color: #fbbf24; }
+.dec-tick.neut { color: #64748b; }
+.dec-label  { flex: 1; font-size: 12px; color: #cbd5e1; font-weight: 600; }
+.dec-detail { font-size: 11px; color: #94a3b8; text-align: right; white-space: nowrap; }
+/* horizontal buy/sell flow bar */
+.dec-flowbar { height: 6px; border-radius: 3px; background:#1e293b; position:relative; margin:6px 0 2px; overflow:hidden; }
+.dec-flowbar .ff { position:absolute; top:0; bottom:0; }
+.dec-flowbar .ff.buy  { left:50%;  background:#22c55e; }
+.dec-flowbar .ff.sell { right:50%; background:#ef4444; }
+
+/* ── Next-bar forecast tiles (1m / 5m / 15m) — display only, above Open Trade ── */
+.nbt-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+@media (max-width: 720px) { .nbt-wrap { grid-template-columns: 1fr; } }
+.nbt-header {
+  grid-column: 1 / -1;
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #64748b;
+  padding: 0 2px;
+}
+.nbt-tile {
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #0c1626;
+  border: 1px solid #1e293b;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.nbt-tile.buy   { background:#0f2a1a; border-color:#166534; }
+.nbt-tile.sell  { background:#2a1010; border-color:#991b1b; }
+.nbt-tile.mixed { background:#0c1626; border-color:#334155; opacity: 0.85; }
+
+/* Small sub-label used in section titles (e.g. "Pepperstone · live history"). */
+.lg-sub { font-size: 11px; font-weight: 500; color: #64748b; letter-spacing: 0.3px; }
+/* Trade-source chip on each Today's Trades row (which engine fired, or Manual). */
+.lg-src { font-weight: 700; padding: 1px 7px; border-radius: 6px; }
+.lg-src-engine { color: #c4b5fd; background: rgba(139,92,246,0.14); }
+.lg-src-manual { color: #fcd34d; background: rgba(251,191,36,0.14); }
+/* Close-reason chip (how the trade exited) on each Today's Trades row. */
+.lg-cr { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 6px; }
+.lg-cr-tp  { color: #4ade80; background: rgba(34,197,94,0.15); }
+.lg-cr-sl  { color: #f87171; background: rgba(239,68,68,0.15); }
+.lg-cr-man { color: #fbbf24; background: rgba(251,191,36,0.15); }
+.lg-cr-time { color: #60a5fa; background: rgba(96,165,250,0.15); }
+
+/* Per-engine scoreboard table — compact today's wins/SLs/net £ by engine. */
+.eng-sum-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.eng-sum-table th, .eng-sum-table td { padding: 7px 10px; text-align: right; white-space: nowrap; }
+.eng-sum-table th { color: #64748b; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #334155; }
+.eng-sum-table td { border-bottom: 1px solid #1e293b; color: #cbd5e1; font-variant-numeric: tabular-nums; }
+.eng-sum-table td.eng-name, .eng-sum-table th.eng-name { text-align: left; color: #f1f5f9; font-weight: 600; }
+.eng-sum-table tr.eng-total td { border-top: 2px solid #334155; border-bottom: none; font-weight: 700; color: #f1f5f9; }
+.eng-sum-table .pos { color: #4ade80; font-weight: 700; }
+.eng-sum-table .neg { color: #f87171; font-weight: 700; }
+.eng-sum-table .muted { color: #64748b; }
+.eng-sum-table .wr-bad { color: #f87171; }
+.eng-sum-table .wr-ok  { color: #fbbf24; }
+.eng-sum-table .wr-good { color: #4ade80; }
+
+/* Research-variants expander — collapses the 3 A/B forecast rows behind a toggle. */
+.nbt-research-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px solid #1e293b; color: #94a3b8;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
+  padding: 6px 10px; border-radius: 8px; cursor: pointer;
+  margin: 0 0 14px;
+}
+.nbt-research-toggle:hover { color: #cbd5e1; border-color: #334155; }
+.nbt-research-toggle .chev { transition: transform 0.15s ease; }
+.nbt-research-toggle.open .chev { transform: rotate(180deg); }
+.nbt-research-body { display: none; }
+.nbt-research-body.open { display: block; }
+
+.nbt-head {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase;
+  color: #94a3b8;
+}
+.nbt-head .nbt-tf { font-weight: 700; }
+.nbt-head .nbt-band {
+  font-size: 9px; padding: 2px 6px; border-radius: 4px;
+  background: rgba(148,163,184,0.10);
+  letter-spacing: 0.4px;
+}
+.nbt-head .nbt-band.strong { color: #fde047; background: rgba(250,204,21,0.10); }
+.nbt-head .nbt-band.light  { color: #fbbf24; background: rgba(251,191,36,0.10); }
+.nbt-head .nbt-band.weak   { color: #94a3b8; }
+.nbt-head .nbt-band.none   { color: #64748b; }
+.nbt-times {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+  color: #fde047;
+}
+
+.nbt-call {
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: 22px; font-weight: 800; letter-spacing: 0.5px;
+}
+.nbt-call .nbt-icon { font-size: 24px; }
+.nbt-tile.buy   .nbt-call { color: #4ade80; }
+.nbt-tile.sell  .nbt-call { color: #f87171; }
+.nbt-tile.mixed .nbt-call { color: #94a3b8; }
+.nbt-call .nbt-conf {
+  margin-left: auto; font-size: 12px; font-weight: 700; color: #cbd5e1;
+  letter-spacing: 0;
+}
+
+.nbt-lean {
+  position: relative; height: 4px; background: rgba(148,163,184,0.15);
+  border-radius: 2px; overflow: hidden;
+}
+.nbt-lean .nbt-mid {
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
+  background: rgba(255,255,255,0.18);
+}
+.nbt-lean .nbt-fill {
+  position: absolute; top: 0; bottom: 0;
+}
+.nbt-lean .nbt-fill.buy  { background: linear-gradient(90deg, #166534 0%, #4ade80 100%); border-radius: 0 2px 2px 0; }
+.nbt-lean .nbt-fill.sell { background: linear-gradient(270deg, #991b1b 0%, #f87171 100%); border-radius: 2px 0 0 2px; }
+
+.nbt-reason {
+  font-size: 11px; color: #cbd5e1; line-height: 1.35;
+}
+.nbt-acc {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+  color: #64748b;
+}
+.nbt-acc.good    { color: #fde047; }
+.nbt-acc.ok      { color: #fbbf24; }
+.nbt-acc.neutral { color: #94a3b8; }
+.nbt-acc.bad     { color: #f87171; }
+.nbt-acc.warming { color: #64748b; font-weight: 600; }
+
+/* ── Breakout-probability chip — orthogonal to direction call ─────────── */
+.nbt-brk {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+  padding: 2px 7px; border-radius: 5px; align-self: flex-start;
+  border: 1px solid currentColor; color: #64748b;
+}
+.nbt-brk .lbl  { color: #475569; text-transform: uppercase; letter-spacing: 0.5px; font-size: 8.5px; }
+.nbt-brk .pct  { font-size: 11px; }
+.nbt-brk.low    { color: #64748b; background: rgba(100,116,139,0.08); }
+.nbt-brk.medium { color: #fbbf24; background: rgba(251,191,36,0.10); }
+.nbt-brk.high   { color: #fde047; background: rgba(250,204,21,0.12); }
+
+/* ── Support / resistance line ───────────────────────────────────────── */
+.nbt-sr {
+  display: flex; gap: 10px; align-items: center;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.2px;
+}
+.nbt-sr .sr-r    { color: #f87171; }   /* resistance — red, above */
+.nbt-sr .sr-s    { color: #4ade80; }   /* support — green, below */
+.nbt-sr .sr-none { color: #475569; }
+.nbt-sr .sr-tch  { opacity: 0.7; font-size: 8px; letter-spacing: -1px; }
+
+/* ── Candlestick pattern chip ────────────────────────────────────────── */
+.nbt-pat {
+  display: inline-flex; align-items: center; gap: 5px; align-self: flex-start;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.2px;
+  padding: 2px 7px; border-radius: 5px; border: 1px solid currentColor;
+}
+.nbt-pat .pat-nm { font-weight: 700; }
+.nbt-pat .pat-st { font-size: 8px; opacity: 0.85; letter-spacing: -1px; }
+.nbt-pat.buy     { color: #4ade80; background: rgba(74,222,128,0.10); }
+.nbt-pat.sell    { color: #f87171; background: rgba(248,113,113,0.10); }
+.nbt-pat.neutral { color: #94a3b8; background: rgba(148,163,184,0.08); }
+
+/* ── Prior-call strip — last 5 resolved calls per tile, newest first ──── */
+.nbt-prior {
+  display: flex; align-items: center; gap: 6px; flex-wrap: nowrap;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.3px;
+  color: #64748b; margin-top: 2px;
+}
+.nbt-prior .lbl { color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+.nbt-prior .call {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 2px 6px 1px; border-radius: 4px;
+  border: 1px solid currentColor; line-height: 1.15;
+}
+.nbt-prior .call .pred {
+  display: inline-flex; align-items: center; gap: 2px;
+  font-size: 9.5px; font-weight: 700;
+}
+.nbt-prior .call .actual {
+  font-size: 8px; font-weight: 700; letter-spacing: 0.5px;
+  opacity: 0.85;
+}
+.nbt-prior .call.hit  { color: #4ade80; background: rgba(74,222,128,0.10); }
+.nbt-prior .call.miss { color: #f87171; background: rgba(248,113,113,0.10); }
+.nbt-prior .empty { color: #475569; font-style: italic; font-weight: 600; }
+
+.nbt-notice {
+  font-size: 9.5px; color: #64748b; font-style: italic;
+}
+.m5-strip.buy  { background:#0f2a1a; border-color:#166534; }
+.m5-strip.sell { background:#2a1010; border-color:#991b1b; }
+.m5-strip.wait { background:#0c1626; border-color:#1e3a5f; }
+.m5-strip .head {
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.m5-strip .head .sep { color:#475569; }
+.m5-strip .head .time { color: #fde047; font-weight: 700; }
+.m5-strip .action {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  line-height: 1.1;
+  margin: 4px 0 2px;
+}
+.m5-strip .action.buy   { color:#4ade80; }
+.m5-strip .action.sell  { color:#f87171; }
+.m5-strip .action.wait  { color:#94a3b8; }
+.m5-strip .action.lean  { opacity: 0.85; font-size: 30px; }
+.m5-strip .confline {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 14px;
+  color: #cbd5e1;
+}
+.m5-strip .confline .conf b { color:#fde047; font-size: 18px; font-weight: 800; }
+.m5-strip .confline .sub    { color:#cbd5e1; font-weight: 600; }
+.m5-strip .confline .sep    { color:#475569; }
+.m5-strip .blurb {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.5;
+  max-width: 720px;
+}
+.m5-strip .meta {
+  font-size: 11px;
+  color: #64748b;
+  letter-spacing: 0.2px;
+}
+
+/* Lean meter — horizontal gauge filled from the midline in the lean's
+   direction. Animates smoothly between renders so the user perceives the
+   live tick of V1's score. */
+.m5-strip .lean-meter {
+  margin: 6px 0 4px;
+}
+.m5-strip .lean-meter .track {
+  position: relative;
+  height: 10px;
+  border-radius: 6px;
+  background: #0c1626;
+  border: 1px solid #1e3a5f;
+  overflow: hidden;
+}
+.m5-strip .lean-meter .mid {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 50%;
+  width: 1px;
+  background: #475569;
+}
+.m5-strip .lean-meter .fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 4px;
+  transition: left 600ms ease, width 600ms ease, background 300ms ease;
+}
+.m5-strip .lean-meter .fill.buy  { background: linear-gradient(90deg, #166534 0%, #4ade80 100%); }
+.m5-strip .lean-meter .fill.sell { background: linear-gradient(270deg, #991b1b 0%, #f87171 100%); }
+.m5-strip .lean-meter .ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 10px;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.m5-strip .lean-meter .ticks .sell   { color: #f87171; }
+.m5-strip .lean-meter .ticks .buy    { color: #4ade80; }
+.m5-strip .lean-meter .ticks .center { color: #94a3b8; }
+.m5-strip .body .regime.quiet     { color:#60a5fa; }
+.m5-strip .body .prob { color:#fde047; }
+
+/* ── Live engine status tiles — each engine's current eval + stop reason ── */
+.eng-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+.est-tile {
+  background:#0c1626; border:1px solid #334155; border-radius:10px;
+  padding:10px 12px; display:flex; flex-direction:column; gap:6px;
+}
+.est-tile.trade    { background:#0f2a1a; border-color:#166534; }
+.est-tile.signal   { background:#0f2a1a; border-color:#22c55e; }
+.est-tile.gated    { background:#1a1a0c; border-color:#854d0e; }
+.est-tile.watching { background:#0b1a2e; border-color:#1e3a5f; }
+.est-tile.wait     { background:#0c1626; border-color:#334155; opacity:0.8; }
+.est-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.est-name { font-size:12px; font-weight:700; color:#e2e8f0; }
+.est-badge {
+  font-size:9px; font-weight:700; letter-spacing:0.4px; text-transform:uppercase;
+  padding:2px 7px; border-radius:10px; background:rgba(148,163,184,0.18); color:#cbd5e1;
+}
+.est-tile.trade .est-badge    { background:#166534; color:#dcfce7; }
+.est-tile.signal .est-badge   { background:#22c55e; color:#052e16; }
+.est-tile.gated .est-badge    { background:#854d0e; color:#fef3c7; }
+.est-tile.watching .est-badge { background:#1e3a5f; color:#dbeafe; }
+.est-call { font-size:15px; font-weight:800; }
+.est-call.buy  { color:#4ade80; }
+.est-call.sell { color:#f87171; }
+.est-call.none { color:#64748b; }
+.est-reason { font-size:11px; color:#94a3b8; line-height:1.45; }
+.est-checks {
+  display:flex; flex-direction:column; gap:3px; margin-top:4px;
+  border-top:1px solid rgba(148,163,184,0.12); padding-top:6px;
+}
+.est-chk { display:flex; align-items:baseline; gap:6px; font-size:10.5px; line-height:1.35; }
+.est-chk .ck-ic { font-weight:800; width:11px; flex:0 0 auto; text-align:center; }
+.est-chk.pass .ck-ic { color:#4ade80; }
+.est-chk.fail .ck-ic { color:#f87171; }
+.est-chk .ck-lb { color:#cbd5e1; }
+.est-chk .ck-dt { color:#64748b; margin-left:auto; padding-left:8px; white-space:nowrap; }
+.est-chk.off { opacity:0.42; }
+.est-chk.off .ck-ic { color:#64748b; }
+.est-chk .ck-off { font-style:normal; opacity:0.75; font-size:9px; }
+
+/* ── Engine subsections inside Today's Signals ─────────────────────────
+   Each engine (Hybrid-V4, M15-IntraBar, etc.) gets its own header bar
+   followed by its own signal cards. Hybrid-V4 first, M15-IntraBar second,
+   rest alphabetically. */
+.eng-group { margin-bottom: 18px; }
+.eng-group:last-child { margin-bottom: 0; }
+.eng-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 8px 4px; margin-bottom: 6px;
+  border-bottom: 1px solid #1e293b;
+  font-size: 11px; letter-spacing: 0.4px; text-transform: uppercase;
+}
+.eng-header .eng-name  { color: #e2e8f0; font-weight: 700; }
+.eng-header .eng-count {
+  display: inline-block; min-width: 22px; text-align: center;
+  padding: 1px 6px; border-radius: 10px;
+  background: rgba(148,163,184,0.18); color: #cbd5e1;
+  font-size: 10px; font-weight: 700;
+}
+.eng-header .eng-tally { margin-left: auto; font-size: 10px; }
+.eng-tally-w { color: #4ade80; }
+.eng-tally-l { color: #f87171; margin-left: 6px; }
+.eng-tally-t { color: #fbbf24; margin-left: 6px; }
+.eng-tally-p { color: #94a3b8; margin-left: 6px; }
+
+/* ── Laurito-style signal cards (Today's Signals) ──────────────────── */
+.laurito-card {
+  background: #0c1626;
+  border-left: 4px solid #475569;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  font-size: 14px; line-height: 1.55;
+  color: #e2e8f0;
+}
+.laurito-card.buy  { border-left-color: #22c55e; }
+.laurito-card.sell { border-left-color: #ef4444; }
+.laurito-card .lt-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 4px;
+}
+.laurito-card .lt-action {
+  font-size: 16px; font-weight: 800; letter-spacing: 0.5px;
+  color: #f1f5f9; flex: 1;
+}
+.laurito-card.buy  .lt-action { color: #4ade80; }
+.laurito-card.sell .lt-action { color: #f87171; }
+.laurito-card .lt-poe {
+  margin-left: 10px; font-size: 14px; font-weight: 600;
+  color: #cbd5e1; letter-spacing: 0.2px;
+}
+.laurito-card .lt-poe b { color: #f1f5f9; font-weight: 700; }
+.laurito-card .lt-time-inline {
+  margin-left: 10px; font-size: 12px; font-weight: 600;
+  color: #fbbf24; letter-spacing: 0.2px;
+}
+.laurito-card .lt-tid {
+  margin-left: 10px; font-family: ui-monospace, monospace;
+  font-size: 11px; font-weight: 600; color: #94a3b8;
+  background: rgba(148,163,184,0.10);
+  padding: 1px 6px; border-radius: 4px;
+}
+.sub-card .sub-tid {
+  margin-left: 6px; font-family: ui-monospace, monospace;
+  font-size: 10px; color: #94a3b8;
+  background: rgba(148,163,184,0.10);
+  padding: 1px 5px; border-radius: 3px;
+}
+.laurito-card .lt-status {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.4px;
+  padding: 3px 8px; border-radius: 4px;
+  background: rgba(148,163,184,0.15); color: #94a3b8;
+}
+.laurito-card .lt-status.win  { background: rgba(34,197,94,0.18);  color: #4ade80; }
+.laurito-card .lt-status.miss { background: rgba(239,68,68,0.18);  color: #f87171; }
+.laurito-card .lt-status.open { background: #3b82f6; color: #ffffff; font-weight: 800; }
+.laurito-card .lt-status.skip { background: rgba(148,163,184,0.18); color: #94a3b8; }
+.laurito-card .lt-row { color: #cbd5e1; font-size: 14px; }
+.laurito-card .lt-row b { color: #f1f5f9; font-weight: 700; }
+.laurito-card .lt-row.lt-tp-banked { color: #4ade80; text-decoration: line-through; text-decoration-color: rgba(74,222,128,0.5); }
+.laurito-card .lt-row.lt-tp-banked b { color: #86efac; }
+.laurito-card .lt-row.lt-tp-full { color: #fbbf24; font-weight: 600; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(251,191,36,0.25); }
+.laurito-card .lt-row.lt-tp-full b { color: #fcd34d; }
+.laurito-card .lt-row.lt-source { color: #93a4bd; font-size: 12px; letter-spacing: .2px; margin: 2px 0 6px; padding-bottom: 6px; border-bottom: 1px dashed rgba(148,163,184,0.18); text-align: right; }
+.laurito-card .lt-row.lt-source b { color: #c4b5fd; font-weight: 600; }
+.laurito-card .lt-row.lt-source-why { color: #7e8aa0; font-size: 11px; font-style: italic; text-align: right; margin: 0 0 4px; line-height: 1.35; }
+.laurito-card .tp-hit { color: #4ade80; font-size: 11px; font-weight: 600; margin-left: 8px; }
+.laurito-card .lt-realized { margin-top: 6px; font-size: 12px; color: #86efac; }
+.laurito-card .lt-realized b { color: #4ade80; }
+.laurito-card .lt-ran-to { margin-top: 4px; font-size: 11px; color: #94a3b8; font-style: italic; }
+.laurito-card .lt-ran-to b { color: #cbd5e1; font-style: normal; }
+/* ── Closed-trade "Trade Details" receipt (broker-style) ──────────────── */
+.laurito-card .lt-details {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #050a13;
+  border: 1px solid rgba(148,163,184,0.18);
+  border-radius: 6px;
+}
+.laurito-card .lt-details-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.6px;
+  text-transform: uppercase; color: #94a3b8; margin-bottom: 8px;
+}
+.laurito-card .lt-details-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px;
+}
+.laurito-card .lt-dt {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: 13px; color: #94a3b8;
+}
+.laurito-card .lt-dt b { color: #e2e8f0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.laurito-card .lt-dt .pnl { font-weight: 700; }
+.laurito-card .lt-dt .pnl.pos { color: #4ade80; }
+.laurito-card .lt-dt .pnl.neg { color: #f87171; }
+.laurito-card .lt-time {
+  margin-top: 6px; font-size: 12px; color: #fbbf24; font-weight: 600;
+}
+.laurito-card .pnl.pos { color: #4ade80; font-weight: 700; }
+.laurito-card .pnl.neg { color: #f87171; font-weight: 700; }
+.laurito-card.active   { box-shadow: inset 0 0 0 1px rgba(96,165,250,0.20); }
+.laurito-card .lt-live {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #050a13;
+  border: 1px solid rgba(148,163,184,0.18);
+  border-radius: 6px;
+  font-size: 13px; color: #cbd5e1;
+}
+.laurito-card .lt-live-row {
+  display: flex; gap: 14px; align-items: center; justify-content: flex-start;
+  margin-bottom: 4px;
+}
+.laurito-card .lt-live-row .pnl { font-size: 14px; }
+.laurito-card .lt-now b { color: #f1f5f9; font-weight: 700; }
+.laurito-card .lt-age  { color: #94a3b8; font-size: 12px; margin-left: auto; }
+.laurito-card .lt-dist { color: #94a3b8; font-size: 12px; }
+.laurito-card .lt-dist b { color: #e2e8f0; font-weight: 700; }
+.laurito-card .lt-progress {
+  height: 4px; background: rgba(148,163,184,0.15); border-radius: 2px;
+  overflow: hidden; margin-top: 4px;
+}
+.laurito-card .lt-progress-fill {
+  height: 100%; transition: width 0.4s ease;
+}
+.laurito-card .lt-progress-fill.pos { background: linear-gradient(90deg, #22c55e, #4ade80); }
+.laurito-card .lt-progress-fill.neg { background: linear-gradient(90deg, #b91c1c, #ef4444); }
+
+/* ── Ping-pong SUB tiles (dual-tile trailing scalper, child of open trade) ── */
+.sub-card {
+  margin: 2px 0 2px 18px;
+  padding: 8px 12px;
+  background: #0a1220;
+  border-left: 3px solid #475569;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+.sub-card.same { border-left-color: #4ade80; }
+.sub-card.opp  { border-left-color: #f87171; }
+.sub-card.abandoned { opacity: 0.45; border-left-color: #ef4444; }
+.sub-card .sub-line {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px;
+}
+.sub-card .sub-arrow { font-size: 14px; font-weight: 700; }
+.sub-card.same .sub-arrow { color: #4ade80; }
+.sub-card.opp  .sub-arrow { color: #f87171; }
+.sub-card .sub-role { font-weight: 800; letter-spacing: 0.6px; font-size: 11px; color: #f1f5f9; }
+.sub-card .sub-dir  { font-size: 11px; color: #94a3b8; letter-spacing: 0.4px; }
+.sub-card .sub-phase {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.4px;
+  padding: 2px 7px; border-radius: 3px;
+  margin-left: auto;
+}
+.sub-card .sub-phase.standby   { background: rgba(148,163,184,0.18); color: #cbd5e1; }
+.sub-card .sub-phase.building  { background: rgba(59,130,246,0.22);  color: #93c5fd; }
+.sub-card .sub-phase.armed     { background: rgba(34,197,94,0.28);   color: #4ade80; animation: subpulse 1.2s ease-in-out infinite; }
+.sub-card .sub-phase.rearming  { background: rgba(168,85,247,0.22);  color: #c084fc; }
+.sub-card .sub-phase.abandoned { background: rgba(239,68,68,0.20);   color: #f87171; }
+@keyframes subpulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+.sub-card .sub-cum {
+  font-size: 15px; font-weight: 800;
+  min-width: 64px; text-align: right;
+}
+.sub-card .sub-cum.pos  { color: #4ade80; }
+.sub-card .sub-cum.zero { color: #64748b; }
+.sub-card .sub-detail {
+  margin-top: 3px; font-size: 12px; color: #94a3b8;
+}
+.sub-card .sub-detail b { color: #e2e8f0; }
+.sub-card .sub-detail .target { color: #fbbf24; font-weight: 700; }
+.sub-card .sub-bar {
+  margin-top: 5px;
+  height: 3px;
+  background: rgba(148,163,184,0.12);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.sub-card .sub-bar-fill { height: 100%; transition: width 0.3s ease; }
+.sub-card .sub-bar-fill.standby  { background: #475569; }
+.sub-card .sub-bar-fill.building { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+.sub-card .sub-bar-fill.armed    { background: linear-gradient(90deg, #22c55e, #4ade80); }
+.sub-card .sub-bar-fill.rearming { background: linear-gradient(90deg, #a855f7, #c084fc); }
+
+/* ── Recent 4+pt moves (wins + classified misses) ────────────────────── */
+.bigmove-row {
+  display: grid;
+  grid-template-columns: auto auto auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #0f2035;
+  font-size: 13px;
+}
+.bigmove-row:last-child { border-bottom: none; }
+.bigmove-row .tier {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  text-align: center;
+  min-width: 52px;
+}
+.bigmove-row .tier.bronze   { background: rgba(180,83,9,0.20);    color: #fb923c; border: 1px solid rgba(180,83,9,0.4); }
+.bigmove-row .tier.silver   { background: rgba(148,163,184,0.20); color: #e2e8f0; border: 1px solid rgba(148,163,184,0.4); }
+.bigmove-row .tier.gold     { background: rgba(234,179,8,0.20);   color: #fde047; border: 1px solid rgba(234,179,8,0.5); }
+.bigmove-row .tier.headline { background: rgba(96,165,250,0.10);  color: #93c5fd; border: 1px solid rgba(96,165,250,0.3); }
+.bigmove-row .tier.quiet    { background: rgba(71,85,105,0.15);   color: #94a3b8; border: 1px solid rgba(71,85,105,0.3); }
+.bigmove-row.tradeable {
+  background: rgba(234,179,8,0.06);
+  box-shadow: inset 3px 0 0 #fde047;
+}
+.bigmove-row .trade-star {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: rgba(234,179,8,0.22);
+  color: #fde047;
+  border: 1px solid rgba(234,179,8,0.5);
+  min-width: 70px;
+  text-align: center;
+}
+.section-title .tradeable-pill {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  margin-left: 6px;
+  border-radius: 4px;
+  background: rgba(234,179,8,0.22);
+  color: #fde047;
+  border: 1px solid rgba(234,179,8,0.5);
+}
+.bigmove-row .outcome {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-align: center;
+  min-width: 70px;
+}
+.bigmove-row .outcome.win  { background: rgba(34,197,94,0.18); color: #4ade80; border: 1px solid rgba(34,197,94,0.4); }
+.bigmove-row .outcome.miss { background: rgba(239,68,68,0.18); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+.bigmove-row .outcome.skip { background: rgba(245,158,11,0.18); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4); }
+.bigmove-row .outcome.open { background: rgba(96,165,250,0.18); color: #93c5fd; border: 1px solid rgba(96,165,250,0.4); }
+.bigmove-row .mag .pnl.pos { color: #4ade80; }
+.bigmove-row .mag .pnl.neg { color: #f87171; }
+.bigmove-row .lean {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  text-align: center;
+  min-width: 110px;
+  white-space: nowrap;
+}
+.bigmove-row .lean.buy  { background: rgba(34,197,94,0.10);   color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+.bigmove-row .lean.sell { background: rgba(239,68,68,0.10);   color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+.bigmove-row .lean.wait { background: rgba(148,163,184,0.10); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
+.bigmove-row .lean.chop { background: rgba(245,158,11,0.10);  color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+.bigmove-row .body { color: #e2e8f0; min-width: 0; }
+.bigmove-row .body .top { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.bigmove-row .body .dir.buy  { color:#4ade80; font-weight:700; }
+.bigmove-row .body .dir.sell { color:#f87171; font-weight:700; }
+.bigmove-row .body .time     { color:#94a3b8; font-size: 11px; }
+.bigmove-row .body .price {
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  color: #cbd5e1;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+}
+.bigmove-row .body .price::before { content: '·'; color:#475569; margin-right: 6px; }
+.bigmove-row .body .why {
+  margin-top: 3px;
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+.bigmove-row .mag {
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  color: #fde047;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* ── 5-min outlook row (3 tiles) ──────────────────────────────────── */
+
+.bar-card {
+  background: linear-gradient(180deg, #0a1628 0%, #061018 100%);
+  border: 1px solid #0f2035;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+}
+.bar-card.buy   { border-color: rgba(34,197,94,0.35);  box-shadow: inset 4px 0 0 #22c55e; }
+.bar-card.sell  { border-color: rgba(239,68,68,0.35);  box-shadow: inset 4px 0 0 #ef4444; }
+.bar-card.flat  { box-shadow: inset 4px 0 0 #334155; }
+.bar-card .title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.bar-card .title .tag {
+  font-size: 10px;
+  background: #0f2035;
+  color: #94a3b8;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+.bar-card .title .tag.live { background: rgba(251,191,36,0.15); color: #fbbf24; animation: blink 2s ease-in-out infinite; }
+.bar-card .title .tag.buy  { background: rgba(34,197,94,0.15); color: #4ade80; }
+.bar-card .title .tag.sell { background: rgba(239,68,68,0.15); color: #f87171; }
+.bar-card .row { font-size: 13px; color: #cbd5e1; line-height: 1.6; }
+.bar-card .row b, .bar-card .row strong { color: #e2e8f0; font-weight: 700; }
+.bar-card .row code { color: #fde047; font-weight: 700; }
+.bar-card .dim { color: #64748b; }
+.bar-card .meta {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #64748b;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* progress bar for live forming candle */
+.prog {
+  height: 4px;
+  background: #0f2035;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.prog-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #fde047); transition: width 0.3s ease; }
+
+/* ── Message feed (grouped by bar) ────────────────────────────────────── */
+.feed { display: flex; flex-direction: column; gap: 18px; }
+
+.bar-group {
+  background: linear-gradient(180deg, #0a1628 0%, #061018 100%);
+  border: 1px solid #0f2035;
+  border-radius: 14px;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.bar-group.buy  { border-color: rgba(34,197,94,0.4);  box-shadow: inset 4px 0 0 #22c55e; }
+.bar-group.sell { border-color: rgba(239,68,68,0.4);  box-shadow: inset 4px 0 0 #ef4444; }
+.bar-group.flat { box-shadow: inset 4px 0 0 #334155; }
+
+.bar-group .group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #0f2035;
+}
+.bar-group .group-head .bar-time { color: #e2e8f0; font-size: 13px; }
+.bar-group .group-head .chip {
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  letter-spacing: 0.05em;
+}
+.chip.held     { background: rgba(34,197,94,0.18);  color: #4ade80; }
+.chip.reversed { background: rgba(239,68,68,0.18);  color: #f87171; }
+.chip.live     { background: rgba(251,191,36,0.18); color: #fbbf24; animation: blink 2s ease-in-out infinite; }
+.chip.dir-buy  { background: rgba(34,197,94,0.18);  color: #4ade80; }
+.chip.dir-sell { background: rgba(239,68,68,0.18);  color: #f87171; }
+.chip.dir-flat { background: #1e293b; color: #94a3b8; }
+
+.bar-group .events {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 900px) { .bar-group .events { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .bar-group .events { grid-template-columns: 1fr; } }
+
+.msg {
+  background: linear-gradient(180deg, #0a1628 0%, #061018 100%);
+  border: 1px solid #0f2035;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #cbd5e1;
+  position: relative;
+  overflow: hidden;
+}
+.msg.buy   { border-color: rgba(34,197,94,0.35);  box-shadow: inset 4px 0 0 #22c55e; }
+.msg.sell  { border-color: rgba(239,68,68,0.35);  box-shadow: inset 4px 0 0 #ef4444; }
+.msg.flat  { border-color: rgba(148,163,184,0.35); box-shadow: inset 4px 0 0 #94a3b8; }
+.msg.placeholder {
+  border-style: dashed;
+  border-color: rgba(71,85,105,0.4);
+  background: transparent;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 120px;
+}
+.msg.placeholder .head { color: #64748b; font-weight: 600; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+.msg.placeholder .line { font-size: 12px; color: #475569; }
+
+.msg .head {
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: #e2e8f0;
+  letter-spacing: -0.01em;
+}
+.msg.buy  .head { color: #4ade80; }
+.msg.sell .head { color: #f87171; }
+.msg .sep {
+  color: #1e3050;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+  user-select: none;
+}
+.msg .line { white-space: pre-wrap; }
+.msg .line b, .msg .line strong { color: #e2e8f0; font-weight: 700; }
+.msg .line code, .msg .price {
+  color: #fde047;
+  font-weight: 700;
+}
+.msg .warn { color: #fbbf24; }
+.msg .ok   { color: #4ade80; }
+.msg .bad  { color: #f87171; }
+.msg .dim  { color: #64748b; }
+.msg .time { color: #64748b; margin-top: 6px; font-size: 12px; }
+
+.placeholder-card {
+  grid-column: 1 / -1;
+  background: rgba(15, 32, 53, 0.25);
+  border: 1px dashed #0f2035;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  color: #475569;
+  font-size: 12px;
+}
+
+/* ── Trade sections ───────────────────────────────────────────────────── */
+.section { margin-top: 28px; }
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title .count {
+  background: #0f2035;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  letter-spacing: 0.04em;
+}
+
+.trade-row {
+  background: linear-gradient(180deg, #0a1628 0%, #061018 100%);
+  border: 1px solid #0f2035;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  display: grid;
+  grid-template-columns: 70px 1fr auto auto;
+  gap: 14px;
+  align-items: center;
+  font-size: 13px;
+}
+@media (max-width: 700px) {
+  .trade-row { grid-template-columns: 60px 1fr; gap: 10px; }
+  .trade-row .levels, .trade-row .result { grid-column: 1 / -1; }
+}
+.trade-row.open  { border-left: 3px solid #fbbf24; }
+.trade-row.win   { border-left: 3px solid #22c55e; }
+.trade-row.loss  { border-left: 3px solid #ef4444; }
+.trade-row.flat  { border-left: 3px solid #64748b; }
+
+.trade-dir {
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-align: center;
+  font-family: ui-monospace, monospace;
+}
+.trade-dir.buy  { background: rgba(34,197,94,0.12);  color: #4ade80; }
+.trade-dir.sell { background: rgba(239,68,68,0.12);  color: #f87171; }
+
+.trade-meta { font-family: ui-monospace, monospace; font-size: 12px; color: #94a3b8; }
+.trade-meta .label { color: #475569; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; font-size: 10px; margin-right: 4px; }
+.trade-meta .engine { color: #cbd5e1; font-weight: 700; }
+.trade-meta .times { margin-top: 4px; color: #64748b; }
+.trade-meta .times .frozen { color: #cbd5e1; font-weight: 700; }
+.trade-meta .times .sep { color: #1e3050; margin: 0 6px; }
+
+.levels {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: #64748b;
+  text-align: right;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.levels .v { color: #cbd5e1; }
+
+.result {
+  text-align: right;
+  font-family: ui-monospace, monospace;
+}
+.result .pnl { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+.result .outcome {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.pnl-pos { color: #4ade80; }
+.pnl-neg { color: #f87171; }
+.pnl-flat { color: #94a3b8; }
+
+.placeholder {
+  background: rgba(15, 32, 53, 0.25);
+  border: 1px dashed #0f2035;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  color: #475569;
+  font-size: 12px;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 10px;
+  color: #334155;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.footer .stale { color: #f87171; }
+
+/* ── HALT-TILES 2026-06-03 (24h) ─────────────────────────────────────────
+   Temporarily hide the 1m/5m/15m forecast tiles + research variants + the
+   mid-bar guidance tiles so the dashboard shows ONLY "Special Trade to Grab".
+   JS un-hides these on data, so !important is required to keep them down.
+   TO RESTORE: delete this entire block. */
+#nbt-wrap,
+#nbt-research-toggle,
+#nbt-research-body,
+#midbar-wrap { display: none !important; }
+/* ── end HALT-TILES ─────────────────────────────────────────────────────── */
+</style>
+</head>
+<body>
+
+<header>
+  <span class="hdr-logo">🔮</span>
+  <span class="hdr-name">GoldBot</span>
+  <span class="hdr-sub">M15 Bar Feed</span>
+  <span class="hdr-ver" style="font-size:9px;color:#475569;margin-left:6px;font-family:ui-monospace,monospace">v.tid-2026-05-28-2050</span>
+  <div class="hdr-div"></div>
+  <span class="hdr-price mono" id="hdr-price">—</span>
+  <span class="hdr-spread" id="hdr-spread" title="Live bid-ask spread (lower is better)">SPREAD —</span>
+  <div class="hdr-right">
+    <span><span class="dot dot-off" id="live-dot"></span><span id="live-text">Offline</span></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Broker-down banner — hidden unless the cTrader execution socket has dropped
+       (engines firing but no real orders placed). Reuses the red staleness style. -->
+  <div id="broker-banner" class="staleness-banner" style="display:none"></div>
+
+  <!-- Staleness banner — hidden unless worker pipeline is provably stalled. -->
+  <div id="staleness-banner" class="staleness-banner" style="display:none"></div>
+
+
+  <!-- Rolling hit-rate banner — warns when V1's last-N hit rate has dropped. -->
+  <div id="hitrate-banner" class="hitrate-banner" style="display:none"></div>
+
+  <!-- Pepperstone cTrader demo account — live balance, open trades, floating P&L.
+       Rendered next to the Oanda account card. Replaced the old Oanda/Razor
+       "real account today" card on 2026-06-16. -->
+  <div id="ctrader-account-card" class="oanda-account-card" style="display:none"></div>
+
+  <!-- Manual BUY/SELL → Pepperstone demo. Posts to the engine's loopback-only
+       endpoint (127.0.0.1:8090); works only when the dashboard is opened locally,
+       not via the public gold-bot-manu.com tunnel. Orders use the live TP/SL. -->
+  <div id="manual-trade-panel" class="manual-trade" style="display:none">
+    <div class="mt-buttons">
+      <button id="mt-buy"  class="mt-btn mt-buy"  type="button">BUY</button>
+      <button id="mt-sell" class="mt-btn mt-sell" type="button">SELL</button>
+    </div>
+    <div class="mt-buttons" style="margin-top:8px">
+      <button id="mt-close" class="mt-btn mt-close" type="button">CLOSE ALL</button>
+    </div>
+    <div class="mt-meta">
+      <span id="mt-bracket" class="mt-bracket">market · 0.5 lot · TP/SL from engine</span>
+      <span id="mt-status" class="mt-status"></span>
+    </div>
+  </div>
+
+  <!-- Mid-bar guidance — two side-by-side tiles ("If you act at 1 min" /
+       "If you act at 2 min"). Each tile updates independently as the bar
+       elapses; the shared header carries position, lean, and progress bar. -->
+  <div id="midbar-wrap" class="midbar-wrap" style="display:none">
+    <div class="midbar-header">
+      <div class="mh-meta" id="midbar-meta"></div>
+      <div id="midbar-elapsed"></div>
+    </div>
+    <div id="midbar-tile-1m" class="midbar-tile waiting"></div>
+    <div id="midbar-tile-2m" class="midbar-tile waiting"></div>
+    <div class="mh-progress"><div id="midbar-progress" style="width:0%"></div></div>
+  </div>
+
+  <!-- Next-5-min "WAIT/LEAN/SUGGEST" headline and the Recent-calls feed were
+       removed 2026-05-21 (per user request — the mid-bar tiles already carry
+       the same lean signal, and trade history below covers what fired). -->
+
+  <!-- ── Per-engine summary — today's wins / SLs / net £ grouped by engine.
+       Compact scoreboard built from the same Pepperstone (cTrader) history.
+       Sits directly above Open Trade. ──────────────────────────────────── -->
+  <div class="section" id="engine-summary-section" style="display:none">
+    <div class="section-title">
+      Engines — Today's Scoreboard <span class="lg-sub">Pepperstone · per engine</span>
+      <span class="count" id="engine-summary-count">0</span>
+    </div>
+    <div id="engine-summary-wrap"></div>
+  </div>
+
+  <!-- ── Open Trade ──────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      Open Trade
+      <span class="count" id="open-count">0</span>
+    </div>
+    <div id="open-list">
+      <div class="placeholder">No open trade.</div>
+    </div>
+  </div>
+
+
+  <!-- ── Live Engine Status — every engine's current evaluation each tick.
+       LOCAL-ONLY: shown only when the dashboard is opened on this machine
+       (control endpoint reachable); hidden on the public tunnel. ── -->
+  <div class="section" id="engine-status-section" style="display:none">
+    <div class="section-title">
+      Engine Status
+      <span class="count" id="eng-count">0</span>
+    </div>
+    <div id="eng-tiles" class="eng-tiles">
+      <div class="placeholder">Waiting for first tick…</div>
+    </div>
+  </div>
+
+  <!-- ── "Take this trade?" decision tile — full-width, green/red tick columns
+       across Trend · Order Flow · Levels · Context, with a combined verdict. ── -->
+  <div id="dec-card" class="dec-card" style="display:none">
+    <div id="dec-verdict" class="dec-verdict wait"></div>
+    <div class="dec-grid">
+      <div class="dec-col" id="dec-col-trend"></div>
+      <div class="dec-col" id="dec-col-flow"></div>
+      <div class="dec-col" id="dec-col-levels"></div>
+      <div class="dec-col" id="dec-col-context"></div>
+    </div>
+  </div>
+
+  <!-- M1-Momentum +2 grab (demo forward-test) — shows the last fire so you can
+       see which signal/variant hit live. Hidden until the monitor fires. -->
+  <div id="m1mom-card" style="display:none; margin:8px 0; padding:10px 14px; border-radius:8px;
+       background:#0b1a2a; border:1px solid #1e3a5f; font-size:13px; color:#cbd5e1;">
+    <span style="font-weight:700; color:#60a5fa;">⚡ M1-Momentum +2 Grab</span>
+    <span style="margin-left:8px; color:#94a3b8;">demo forward-test</span>
+    <span id="m1mom-last" style="float:right; color:#e2e8f0; font-weight:600;"></span>
+  </div>
+
+  <!-- ── Next-bar forecast tiles (1m / 5m / 15m) — display only ──────── -->
+  <div id="nbt-wrap" class="nbt-wrap" style="display:none">
+    <div class="nbt-header">Forecast — Pattern only (display only)</div>
+    <div id="nbt-tile-1m"  class="nbt-tile mixed"></div>
+    <div id="nbt-tile-5m"  class="nbt-tile mixed"></div>
+    <div id="nbt-tile-15m" class="nbt-tile mixed"></div>
+  </div>
+
+  <!-- ── Research-variants expander — three A/B forecast rows, collapsed by default. ── -->
+  <button id="nbt-research-toggle" class="nbt-research-toggle" type="button" aria-expanded="false">
+    <span>Show research variants</span>
+    <span class="chev">▾</span>
+  </button>
+  <div id="nbt-research-body" class="nbt-research-body">
+    <!-- ── A/B row: same direction, confidence shifted by tick density ──── -->
+    <div id="nbt-wrap-enh" class="nbt-wrap" style="display:none">
+      <div class="nbt-header">Forecast — Pattern + Tick Density (A/B comparison)</div>
+      <div id="nbt-tile-1m-enh"  class="nbt-tile mixed"></div>
+      <div id="nbt-tile-5m-enh"  class="nbt-tile mixed"></div>
+      <div id="nbt-tile-15m-enh" class="nbt-tile mixed"></div>
+    </div>
+
+    <!-- ── V3a row: spread regime dampener (cap conf when WIDE; MIXED at EXTREME/BROKEN) ── -->
+    <div id="nbt-wrap-sp" class="nbt-wrap" style="display:none">
+      <div class="nbt-header">Forecast — Pattern + Spread Dampener (V3a)</div>
+      <div id="nbt-tile-1m-sp"  class="nbt-tile mixed"></div>
+      <div id="nbt-tile-5m-sp"  class="nbt-tile mixed"></div>
+      <div id="nbt-tile-15m-sp" class="nbt-tile mixed"></div>
+    </div>
+
+    <!-- ── V3b row: news window dampener (cap conf during high-impact news) ── -->
+    <div id="nbt-wrap-nw" class="nbt-wrap" style="display:none">
+      <div class="nbt-header">Forecast — Pattern + News Dampener (V3b)</div>
+      <div id="nbt-tile-1m-nw"  class="nbt-tile mixed"></div>
+      <div id="nbt-tile-5m-nw"  class="nbt-tile mixed"></div>
+      <div id="nbt-tile-15m-nw" class="nbt-tile mixed"></div>
+    </div>
+  </div>
+
+  <!-- ── Today's Trades — full ledger for the London day (automated engines +
+       manual dashboard-button trades), resets at the 22:55 daily-clear. ──── -->
+  <div class="section" id="todays-signals-section" style="display:none">
+    <div class="section-title">
+      Today's Trades <span class="lg-sub">Pepperstone · live history</span>
+      <span class="count" id="todays-signals-count">0</span>
+      <span class="tradeable-pill" id="tradeable-count" style="display:none"></span>
+    </div>
+    <div id="todays-signals-list"></div>
+  </div>
+
+
+  <!-- Today's Recap removed 2026-05-21 (per user request — Paper P&L headline at
+       top of dashboard already shows the day's net result; no need for both). -->
+
+
+  <!-- Closed Trades section removed 2026-05-21 (per user request — Today's
+       Signals already shows win/loss status per signal, and Daily Recap
+       carries the day-level totals). -->
+
+  <div class="footer" id="footer">Polling every 5s · last update <span id="ft-ago">never</span></div>
+
+</div>
+
+<script>
+// Hosted (GitHub Pages) reads the live state from the `data` branch via raw CDN;
+// local/file: serving keeps the relative sibling file for dev.
+const STATE_PATH = (['localhost', '127.0.0.1', ''].includes(location.hostname) || location.protocol === 'file:')
+  ? 'state.json'
+  : 'https://raw.githubusercontent.com/askbotta/goldbot-dashboard/data/state.json';
+const POLL_MS = 1000;
+let lastFingerprint = '';
+let lastState = null;     // cached for the per-second open-trade ticker
+
+const $ = id => document.getElementById(id);
+const fmt2 = n => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmt1 = n => Number(n).toFixed(1);
+const esc  = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const pctInt = p => Math.round(Number(p ?? 0) * 100);
+const signed = n => (Number(n) >= 0 ? '+' : '') + Number(n).toFixed(1);
+
+function londonFull(iso) {
+  try {
+    return new Date(iso).toLocaleString('en-GB', {
+      weekday: 'short', day: '2-digit', month: 'short',
+      hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London'
+    });
+  } catch { return '—'; }
+}
+function isoMinus(iso, minutes) {
+  try {
+    const d = new Date(iso);
+    d.setMinutes(d.getMinutes() - (minutes || 0));
+    return d.toISOString();
+  } catch { return iso; }
+}
+function timeSince(iso) {
+  if (!iso) return 'never';
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 5)   return 'just now';
+  if (s < 60)  return s + 's ago';
+  if (s < 3600) return Math.floor(s / 60) + 'm ago';
+  return Math.floor(s / 3600) + 'h ago';
+}
+
+// 15-min loop renderers removed 2026-05-18 (renderEarly, renderConfirmed,
+// renderNextPrediction, renderMessage, renderFeed, renderBarGroup,
+// renderClosedBar, renderLiveBar). Kept only M5 + trade + recap renderers.
+
+
+function render(state) {
+  if (!state) return;
+  lastState = state;
+
+  // Header — price + live dot
+  if (state.price)  $('hdr-price').textContent = fmt2(state.price);
+  const healthy = state.feedHealthy === true;
+  $('live-dot').className    = 'dot ' + (healthy ? 'dot-live' : 'dot-off');
+  $('live-text').textContent = healthy ? 'Live · ' + (state.tickSource || 'feed') : 'Offline';
+
+  // Spread chip — colour-coded by regime so a glance tells you if the bot is
+  // being filtered out by the spread guard right now.
+  const spread = state.spread;
+  const regime = (state.spreadRegime || 'UNKNOWN').toUpperCase();
+  const velSym = ({ EXPANDING: '↑', CONTRACTING: '↓', STABLE: '·' })[(state.spreadVelocity || '').toUpperCase()] || '·';
+  const spreadEl = $('hdr-spread');
+  if (spreadEl) {
+    if (Number.isFinite(Number(spread)) && spread > 0) {
+      spreadEl.textContent = `SPREAD ${Number(spread).toFixed(2)} ${velSym} · ${regime}`;
+    } else {
+      spreadEl.textContent = 'SPREAD —';
+    }
+    spreadEl.className = 'hdr-spread ' + regime.toLowerCase();
+  }
+
+  // 15-min loop dropped 2026-05-18, 3-tile row + jargon legend dropped 2026-05-19
+  // (user choice — laymen audience). Only the recommendation card + trade/recap.
+  // Mid-bar 1-min/2-min tiles disabled 2026-05-21 (per user request).
+  // renderMidBarGuidance(state.midBarGuidance);
+  renderEngines(state.engines);
+  renderDecisionTile(state);
+  renderM1Momentum(state.m1Momentum);
+  renderNextBarTiles(state.nextBarTiles);
+  renderCTraderAccount(state.ctraderAccount || state.cTraderAccount, state.price, state.ctraderHistory);
+  renderHitRateBanner(state.rollingHitRate);
+  // Active trades + closed signals share the same Laurito card layout. Splitting
+  // is purely by status — anything ACTIVE goes under "Open Trade", everything
+  // else (WIN / LOSS / DEDUPED / TIMEOUT / etc.) goes under "Today's Signals".
+  const allSignals = state.todaySignals || [];
+  const activeSignals = computeActiveSignals(state, allSignals);
+  renderOpenTrades(activeSignals, state.price);
+  // Today's Trades ledger — the REAL Pepperstone (cTrader) closed-trade history
+  // for the London day: automated + manual, broker-truth GBP P&L. NOT the
+  // Oanda/paper outcomes.
+  renderEngineSummary(state.ctraderHistory);
+  renderCtraderHistory(state.ctraderHistory);
+  renderStalenessBanner(state);
+  renderBrokerBanner(state);
+
+  $('ft-ago').textContent = timeSince(state.updatedAt);
+}
+
+// ── Mid-bar guidance — two side-by-side tiles ─────────────────────────────
+// Renders the 1-min and 2-min tiles. Each tile starts in "waiting" (greyed
+// out) until its phase data is available; then the calculator's label /
+// icon / context drive the colour kind (act / hold / flip / skip).
+function renderMidBarGuidance(tiles) {
+  const wrap = document.getElementById('midbar-wrap');
+  if (!wrap) return;
+  if (!tiles) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+
+  const elapsedSec = tiles.elapsedSec || 0;
+  const pct = Math.min(100, Math.max(0, (elapsedSec / 300) * 100));
+  const posLabel  = tiles.positionDir && tiles.positionDir !== 'FLAT' ? `In ${tiles.positionDir}` : 'Flat';
+  const leanLabel = tiles.predictorLean === 'MIXED' ? 'WAIT' : (tiles.predictorLean || '—');
+
+  document.getElementById('midbar-meta').innerHTML = `
+    <span>Position: <b>${posLabel}</b></span>
+    <span>Lean: <b>${leanLabel}</b></span>
+  `;
+  document.getElementById('midbar-elapsed').innerHTML = `Elapsed: <b>${elapsedSec}s / 300s</b>`;
+  document.getElementById('midbar-progress').style.width = pct.toFixed(1) + '%';
+
+  // London-time labels for each phase tile (bar start + 60s / + 120s).
+  const oneMinLondon = londonHM(isoPlusSec(tiles.barStartUtc, 60));
+  const twoMinLondon = londonHM(isoPlusSec(tiles.barStartUtc, 120));
+  paintTile(document.getElementById('midbar-tile-1m'), tiles.oneMin, 'MIN 1 — TENTATIVE', oneMinLondon);
+  paintTile(document.getElementById('midbar-tile-2m'), tiles.twoMin, 'MIN 2 — CONFIRMED', twoMinLondon);
+}
+
+function isoPlusSec(iso, seconds) {
+  try {
+    const d = new Date(iso);
+    d.setSeconds(d.getSeconds() + (seconds || 0));
+    return d.toISOString();
+  } catch { return iso; }
+}
+
+// ── Live engine status tiles ─────────────────────────────────────────────
+// One tile per engine showing its CURRENT evaluation every tick: state
+// (TRADE/SIGNAL/GATED/WATCHING/WAIT), direction + confidence, and the exact
+// reason it is or isn't firing — e.g. "Spread too wide", ADX/body/volume
+// readouts, trigger-candle mismatch, below-threshold. This is the live
+// "what's stopping it" view. Data: state.engines[] (published every tick).
+function renderEngines(engines) {
+  const wrap = document.getElementById('eng-tiles');
+  if (!wrap) return;
+  const list = Array.isArray(engines) ? engines : [];
+  const countEl = document.getElementById('eng-count');
+  if (countEl) countEl.textContent = list.length;
+  if (!list.length) {
+    wrap.innerHTML = '<div class="placeholder">Waiting for first tick…</div>';
+    return;
+  }
+  wrap.innerHTML = list.map(e => {
+    const state = (e.state || 'WAIT').toUpperCase();
+    const dirL  = (e.direction || 'None').toUpperCase();
+    const conf  = Number.isFinite(e.confidence) ? e.confidence : 0;
+    const cls   = ({ TRADE:'trade', SIGNAL:'signal', GATED:'gated', WATCHING:'watching' })[state] || 'wait';
+    const dcls  = dirL === 'BUY' ? 'buy' : dirL === 'SELL' ? 'sell' : 'none';
+    const call  = dirL === 'NONE' ? '—' : `${dirL} ${conf}%`;
+    const name  = esc(e.displayName || e.engineName || 'Engine');
+    const reason = esc(e.reason || '');
+    const checks = Array.isArray(e.checks) ? e.checks : [];
+    const checksHtml = checks.length
+      ? '<div class="est-checks">' + checks.map(c => {
+          const off = c.enforced === false;
+          const ccls = off ? 'off' : (c.passed ? 'pass' : 'fail');
+          const ic   = off ? '–' : (c.passed ? '✓' : '✗');
+          const offTag = off ? ' <i class="ck-off">(off)</i>' : '';
+          return `<div class="est-chk ${ccls}"><span class="ck-ic">${ic}</span>`
+               + `<span class="ck-lb">${esc(c.label || '')}${offTag}</span>`
+               + `<span class="ck-dt">${esc(c.detail || '')}</span></div>`;
+        }).join('') + '</div>'
+      : '';
+    return `<div class="est-tile ${cls}">
+      <div class="est-top"><span class="est-name">${name}</span><span class="est-badge">${state}</span></div>
+      <div class="est-call ${dcls}">${call}</div>
+      <div class="est-reason">${reason}</div>
+      ${checksHtml}
+    </div>`;
+  }).join('');
+}
+
+// ── Next-bar forecast tiles (1m / 5m / 15m) ──────────────────────────────
+// Display-only — these never fire trades. Renders three side-by-side tiles
+// above the Open Trade section using state.nextBarTiles. Hidden entirely when
+// the backend isn't sending the field (cold start, pre-deploy).
+// ── "Take this trade?" decision tile ───────────────────────────────────────
+// Decision-first: one GO / WAIT / AVOID verdict, backed by four columns of
+// green/red ticks for the forces from the multi-timeframe order-flow model —
+// Trend (M15 bias → M5 setup → M1 trigger), Order Flow (tick imbalance, entropy,
+// activity, L2 vacuum), Levels (S/R, breakout), and Context (session, spread,
+// volatility). The M15 bias is the anchor; lower timeframes and flow either
+// confirm it (green ✓) or fight it (red ✗). Hard blockers (closed session,
+// broken spread) force AVOID regardless of how the rest reads.
+// M1-Momentum +2 grab (demo forward-test): show the last fire string, hide if none.
+function renderM1Momentum(last) {
+  const card = document.getElementById('m1mom-card');
+  if (!card) return;
+  // M1-Momentum grab card is local-only — hide it on the public site.
+  if (/gold-bot-manu\.com$/i.test(location.hostname)) { card.style.display = 'none'; return; }
+  if (last) {
+    card.style.display = 'block';
+    const el = document.getElementById('m1mom-last');
+    if (el) el.textContent = last;
+  } else {
+    card.style.display = 'none';
+  }
+}
+
+function renderDecisionTile(state) {
+  const card = document.getElementById('dec-card');
+  if (!card) return;
+  // "Take this trade?" decision tile is local-only — hide it on the public site.
+  if (/gold-bot-manu\.com$/i.test(location.hostname)) { card.style.display = 'none'; return; }
+  const tiles = state.nextBarTiles;
+  if (!tiles || !tiles.fifteenMin || !tiles.fiveMin || !tiles.oneMin) {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = '';
+
+  const dirOf  = t => (t && t.direction ? t.direction : 'MIXED').toUpperCase();
+  const m15    = dirOf(tiles.fifteenMin);   // bias  — the anchor
+  const m5     = dirOf(tiles.fiveMin);      // setup
+  const m1     = dirOf(tiles.oneMin);       // trigger
+  const arrow  = d => d === 'BUY' ? '↑ UP' : d === 'SELL' ? '↓ DOWN' : '— unclear';
+  const okBad  = b => b ? { cls:'ok', sym:'✓' } : { cls:'bad', sym:'✗' };
+  const agree  = d => (m15 === 'MIXED' || d === 'MIXED') ? { cls:'neut', sym:'—' }
+                    : d === m15 ? { cls:'ok', sym:'✓' } : { cls:'bad', sym:'✗' };
+
+  // ── Column 1 · Trend (context → confirmation → execution) ──────────────────
+  const trendRows = [
+    { tick: m15 === 'MIXED' ? {cls:'neut',sym:'—'} : {cls:'ok',sym:'◆'},
+      label:'M15 bias', detail: arrow(m15) },
+    { tick: agree(m5), label:'M5 setup',    detail: arrow(m5) },
+    { tick: agree(m1), label:'M1 trigger',  detail: arrow(m1) },
+  ];
+
+  // ── Column 2 · Order flow ──────────────────────────────────────────────────
+  const of = state.orderFlow || {};
+  const imb = Number.isFinite(of.tickImbalance) ? of.tickImbalance : 0;   // −1..+1
+  const imbDir = imb > 0.05 ? 'BUY' : imb < -0.05 ? 'SELL' : 'MIXED';
+  const imbPct = Math.round(Math.abs(imb) * 100);
+  // Flow agrees when its lean shares the M15 bias and is meaningful (≥30%).
+  const flowAgrees = m15 !== 'MIXED' && imbDir === m15 && imbPct >= 30;
+  const flowFights = m15 !== 'MIXED' && imbDir !== 'MIXED' && imbDir !== m15 && imbPct >= 30;
+  const ent = Number.isFinite(state.entropyScore) && state.entropyScore >= 0 ? state.entropyScore : null;
+  const entOrdered = ent !== null && ent < 1.0;   // lower entropy = more ordered/trending tape
+  const tpm = Number.isFinite(state.ticksPerMinute) ? state.ticksPerMinute : null;
+  const active = tpm !== null && tpm >= 20;
+  const depthLive = of.depthFeedLive === true;
+  // A vacuum on the bias side = breakout NOT being absorbed → caution.
+  const biasVacuum = (m15 === 'BUY' && of.hasBuyVacuum) || (m15 === 'SELL' && of.hasSellVacuum);
+
+  const flowBar = `<div class="dec-flowbar"><div class="ff ${imb >= 0 ? 'buy' : 'sell'}" style="${imb>=0?'left:50%':'right:50%'}; width:${(Math.min(Math.abs(imb),1)*50).toFixed(0)}%"></div></div>`;
+  const flowRows = [
+    { tick: imbDir === 'MIXED' ? {cls:'neut',sym:'—'} : (flowFights ? {cls:'bad',sym:'✗'} : flowAgrees ? {cls:'ok',sym:'✓'} : {cls:'warn',sym:'•'}),
+      label:'Tick imbalance', detail: imbDir === 'MIXED' ? 'balanced' : `${imbPct}% ${imbDir==='BUY'?'buy':'sell'}` },
+    { tick: ent === null ? {cls:'neut',sym:'—'} : okBad(entOrdered),
+      label:'Tape ordered', detail: ent === null ? 'n/a' : `H ${ent.toFixed(2)}` },
+    { tick: tpm === null ? {cls:'neut',sym:'—'} : okBad(active),
+      label:'Active flow', detail: tpm === null ? 'n/a' : `${tpm}/min` },
+    { tick: !depthLive ? {cls:'neut',sym:'—'} : biasVacuum ? {cls:'warn',sym:'⚠'} : {cls:'ok',sym:'✓'},
+      label:'L2 vacuum', detail: !depthLive ? 'no depth feed' : biasVacuum ? 'liquidity pulled' : 'absorbed' },
+  ];
+
+  // ── Column 3 · Levels & breakout (from the M5 tile) ────────────────────────
+  const lv = tiles.fiveMin;
+  const px = Number(state.price) || 0;
+  const sup = Number.isFinite(lv.supportPrice) ? lv.supportPrice : null;
+  const res = Number.isFinite(lv.resistancePrice) ? lv.resistancePrice : null;
+  const dist = (lvl) => (px > 0 && lvl) ? Math.abs(px - lvl).toFixed(2) + 'pt' : '—';
+  // Room to run: for a BUY you want resistance far; for a SELL you want support far.
+  const roomOk = m15 === 'BUY' ? (res === null || (px > 0 && res - px > 3))
+               : m15 === 'SELL' ? (sup === null || (px > 0 && px - sup > 3))
+               : null;
+  const brk = Number.isFinite(lv.breakoutProb) ? lv.breakoutProb : null;
+  const brkLean = (lv.breakoutLean || 'NEUTRAL').toUpperCase();
+  const brkAgrees = brk !== null && brk >= 60 && ((brkLean === 'UP' && m15 === 'BUY') || (brkLean === 'DOWN' && m15 === 'SELL'));
+  const levelRows = [
+    { tick: res === null ? {cls:'neut',sym:'—'} : {cls:'neut',sym:'▲'},
+      label:'Resistance', detail: res === null ? 'none' : `${fmt2(res)} (${dist(res)})` },
+    { tick: sup === null ? {cls:'neut',sym:'—'} : {cls:'neut',sym:'▼'},
+      label:'Support', detail: sup === null ? 'none' : `${fmt2(sup)} (${dist(sup)})` },
+    { tick: roomOk === null ? {cls:'neut',sym:'—'} : okBad(roomOk),
+      label:'Room to run', detail: roomOk === null ? 'n/a' : roomOk ? 'clear' : 'level near' },
+    { tick: brk === null ? {cls:'neut',sym:'—'} : brkAgrees ? {cls:'ok',sym:'✓'} : {cls:'neut',sym:'•'},
+      label:'Breakout', detail: brk === null ? 'n/a' : `${brk}% ${brkLean.toLowerCase()}` },
+  ];
+
+  // ── Column 4 · Context (is it tradeable at all) ────────────────────────────
+  const sessionOk = state.sessionAllowed === true;
+  const regime    = (state.spreadRegime || 'UNKNOWN').toUpperCase();
+  const spreadOk  = regime === 'NORMAL';
+  const spreadBroken = regime === 'EXTREME' || regime === 'BROKEN';
+  const vol = state.m5Outlook ? (state.m5Outlook.regime || '').toUpperCase() : '';
+  const volOk = vol === 'ACTIVE' || vol === 'EXPLOSIVE';   // need movement to hit a TP
+  const ctxRows = [
+    { tick: okBad(sessionOk), label:'Session active', detail: esc(state.sessionName || (sessionOk ? 'open' : 'closed')) },
+    { tick: spreadBroken ? {cls:'bad',sym:'✗'} : spreadOk ? {cls:'ok',sym:'✓'} : {cls:'warn',sym:'•'},
+      label:'Spread', detail: regime + (Number.isFinite(Number(state.spread)) ? ` · ${Number(state.spread).toFixed(2)}` : '') },
+    { tick: !vol ? {cls:'neut',sym:'—'} : volOk ? {cls:'ok',sym:'✓'} : {cls:'warn',sym:'•'},
+      label:'Volatility', detail: vol || 'n/a' },
+    { tick: !entOrdered && ent !== null ? {cls:'warn',sym:'•'} : {cls:'neut',sym:'—'},
+      label:'Chop risk', detail: ent === null ? 'n/a' : (entOrdered ? 'low' : 'elevated') },
+  ];
+
+  paintDecCol('dec-col-trend',  'Trend — M15→M5→M1', trendRows);
+  paintDecCol('dec-col-flow',   'Order Flow (proxy)', flowRows, flowBar);
+  paintDecCol('dec-col-levels', 'Levels & Breakout', levelRows);
+  paintDecCol('dec-col-context','Context', ctxRows);
+
+  // ── Verdict ────────────────────────────────────────────────────────────────
+  // Hard blockers force AVOID. Otherwise score confirmations toward the M15 bias.
+  const v = document.getElementById('dec-verdict');
+  const blockers = [];
+  if (!sessionOk)    blockers.push('session closed');
+  if (spreadBroken)  blockers.push('spread ' + regime.toLowerCase());
+  if (flowFights)    blockers.push('order flow against bias');
+
+  if (m15 === 'MIXED') {
+    v.className = 'dec-verdict wait';
+    v.innerHTML = `⏸ WAIT <span class="dv-dir">no M15 bias</span><span class="dv-why">no clear higher-timeframe direction to trade with</span>`;
+    return;
+  }
+
+  // Confirmations: M5, M1, flow lean, breakout agree, volatility, spread normal.
+  let score = 0, max = 6;
+  if (m5 === m15) score++;
+  if (m1 === m15) score++;
+  if (flowAgrees) score++;
+  if (brkAgrees)  score++;
+  if (volOk)      score++;
+  if (spreadOk)   score++;
+
+  if (blockers.length) {
+    v.className = 'dec-verdict avoid';
+    v.innerHTML = `🚫 AVOID <span class="dv-dir">${arrow(m15)}</span><span class="dv-score">${score}/${max}</span><span class="dv-why">${esc(blockers.join(' · '))}</span>`;
+  } else if (m5 === m15 && m1 === m15 && score >= 4) {
+    v.className = 'dec-verdict go';
+    v.innerHTML = `✅ GO <span class="dv-dir">${arrow(m15)}</span><span class="dv-score">${score}/${max}</span><span class="dv-why">all timeframes aligned${flowAgrees ? ' + flow confirms' : ''}${biasVacuum ? ' — but watch L2 vacuum' : ''}</span>`;
+  } else {
+    v.className = 'dec-verdict wait';
+    const missing = [];
+    if (m5 !== m15) missing.push('M5 not aligned');
+    if (m1 !== m15) missing.push('M1 trigger not in');
+    if (!flowAgrees) missing.push('flow unconfirmed');
+    v.innerHTML = `⏸ WAIT <span class="dv-dir">${arrow(m15)}</span><span class="dv-score">${score}/${max}</span><span class="dv-why">${esc(missing.join(' · ') || 'partial confirmation')}</span>`;
+  }
+}
+
+// Renders one decision column: a title, optional inline widget (e.g. flow bar),
+// then tick rows. Each row = { tick:{cls,sym}, label, detail }.
+function paintDecCol(id, title, rows, widget) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `<div class="dec-col-title">${title}</div>${widget || ''}` + rows.map(r => `
+    <div class="dec-row">
+      <div class="dec-tick ${r.tick.cls}">${r.tick.sym}</div>
+      <div class="dec-label">${r.label}</div>
+      <div class="dec-detail">${r.detail}</div>
+    </div>`).join('');
+}
+
+function renderNextBarTiles(tiles) {
+  const wrap = document.getElementById('nbt-wrap');
+  if (!wrap) return;
+  if (!tiles) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+
+  paintNbtTile(document.getElementById('nbt-tile-1m'),  tiles.oneMin,     'Next 1-MIN bar');
+  paintNbtTile(document.getElementById('nbt-tile-5m'),  tiles.fiveMin,    'Next 5-MIN bar');
+  paintNbtTile(document.getElementById('nbt-tile-15m'), tiles.fifteenMin, 'Next 15-MIN bar');
+
+  // A/B enhanced row — only render when backend supplies the variant tiles.
+  const wrapE = document.getElementById('nbt-wrap-enh');
+  if (wrapE) {
+    if (tiles.oneMinEnhanced && tiles.fiveMinEnhanced && tiles.fifteenMinEnhanced) {
+      wrapE.style.display = '';
+      paintNbtTile(document.getElementById('nbt-tile-1m-enh'),  tiles.oneMinEnhanced,     'Next 1-MIN bar');
+      paintNbtTile(document.getElementById('nbt-tile-5m-enh'),  tiles.fiveMinEnhanced,    'Next 5-MIN bar');
+      paintNbtTile(document.getElementById('nbt-tile-15m-enh'), tiles.fifteenMinEnhanced, 'Next 15-MIN bar');
+    } else {
+      wrapE.style.display = 'none';
+    }
+  }
+
+  // V3a — spread dampener row
+  const wrapSp = document.getElementById('nbt-wrap-sp');
+  if (wrapSp) {
+    if (tiles.oneMinSpread && tiles.fiveMinSpread && tiles.fifteenMinSpread) {
+      wrapSp.style.display = '';
+      paintNbtTile(document.getElementById('nbt-tile-1m-sp'),  tiles.oneMinSpread,     'Next 1-MIN bar');
+      paintNbtTile(document.getElementById('nbt-tile-5m-sp'),  tiles.fiveMinSpread,    'Next 5-MIN bar');
+      paintNbtTile(document.getElementById('nbt-tile-15m-sp'), tiles.fifteenMinSpread, 'Next 15-MIN bar');
+    } else {
+      wrapSp.style.display = 'none';
+    }
+  }
+
+  // V3b — news dampener row
+  const wrapNw = document.getElementById('nbt-wrap-nw');
+  if (wrapNw) {
+    if (tiles.oneMinNews && tiles.fiveMinNews && tiles.fifteenMinNews) {
+      wrapNw.style.display = '';
+      paintNbtTile(document.getElementById('nbt-tile-1m-nw'),  tiles.oneMinNews,     'Next 1-MIN bar');
+      paintNbtTile(document.getElementById('nbt-tile-5m-nw'),  tiles.fiveMinNews,    'Next 5-MIN bar');
+      paintNbtTile(document.getElementById('nbt-tile-15m-nw'), tiles.fifteenMinNews, 'Next 15-MIN bar');
+    } else {
+      wrapNw.style.display = 'none';
+    }
+  }
+}
+
+
+function paintNbtTile(el, t, label) {
+  if (!el || !t) return;
+  const dir  = (t.direction || 'MIXED').toUpperCase();
+  const conf = Number.isFinite(t.confidence) ? t.confidence : 0;
+  const score = Number.isFinite(t.score) ? t.score : 50;
+
+  // Tile colour kind drives the gradient backing.
+  const kind = dir === 'BUY' ? 'buy' : dir === 'SELL' ? 'sell' : 'mixed';
+  el.className = 'nbt-tile ' + kind;
+
+  // Confidence band — keep wording consistent with M5 strip.
+  let band, bandText;
+  if      (conf >= 65) { band = 'strong'; bandText = 'Strong'; }
+  else if (conf >= 55) { band = 'light';  bandText = 'Light';  }
+  else if (conf >  0)  { band = 'weak';   bandText = 'Weak';   }
+  else                 { band = 'none';   bandText = 'No edge';}
+
+  const dirIcon  = dir === 'BUY' ? '↑' : dir === 'SELL' ? '↓' : '—';
+  const dirLabel = dir === 'BUY' ? 'UP' : dir === 'SELL' ? 'DOWN' : 'UNCLEAR';
+
+  // Score 0..100 — fill grows from the centre toward the leaning side.
+  const lean = Math.max(0, Math.min(100, score));
+  let fillHtml = '';
+  if (lean > 50.5)        fillHtml = `<div class="nbt-fill buy"  style="left:50%; width:${((lean - 50) * 2).toFixed(1)}%"></div>`;
+  else if (lean < 49.5)   fillHtml = `<div class="nbt-fill sell" style="right:50%; width:${((50 - lean) * 2).toFixed(1)}%"></div>`;
+
+  const confChip = conf > 0 ? `<span class="nbt-conf">${conf}%</span>` : '';
+  const reason   = esc(t.reason || '');
+  const notice   = t.notice ? `<div class="nbt-notice">${esc(t.notice)}</div>` : '';
+
+  // Breakout-probability chip — orthogonal to the direction call. Shows the
+  // chance the current consolidation breaks out + the likely side. Hidden
+  // until the buffer has enough history (backend sends null).
+  let brkHtml = '';
+  if (Number.isFinite(t.breakoutProb)) {
+    const bb   = (t.breakoutBand || 'LOW').toLowerCase();
+    const lean = (t.breakoutLean || 'NEUTRAL').toUpperCase();
+    const bIcon = lean === 'UP' ? '↑' : lean === 'DOWN' ? '↓' : '—';
+    brkHtml = `<div class="nbt-brk ${bb}" title="${esc(t.breakoutReason || '')}">`
+            + `<span class="lbl">Breakout</span>`
+            + `<span class="pct">${t.breakoutProb}%</span>`
+            + `<span>${bIcon}</span></div>`;
+  }
+
+  // Support / resistance line — nearest level each side + touch-count strength.
+  let srHtml = '';
+  const hasR = Number.isFinite(t.resistancePrice), hasS = Number.isFinite(t.supportPrice);
+  if (hasR || hasS) {
+    const dots = n => '•'.repeat(Math.max(1, Math.min(5, n || 1)));
+    const rPart = hasR
+      ? `<span class="sr-r">R ${t.resistancePrice.toFixed(2)} <span class="sr-tch">${dots(t.resistanceTouches)}</span></span>`
+      : `<span class="sr-none">R —</span>`;
+    const sPart = hasS
+      ? `<span class="sr-s">S ${t.supportPrice.toFixed(2)} <span class="sr-tch">${dots(t.supportTouches)}</span></span>`
+      : `<span class="sr-none">S —</span>`;
+    srHtml = `<div class="nbt-sr">${rPart}${sPart}</div>`;
+  }
+
+  // Candlestick pattern chip — name + bias glyph, colour by bias, ★ = strength.
+  let patHtml = '';
+  if (t.patternName) {
+    const pb = (t.patternBias || 'NEUTRAL').toUpperCase();
+    const pcls = pb === 'BUY' ? 'buy' : pb === 'SELL' ? 'sell' : 'neutral';
+    const pIcon = pb === 'BUY' ? '↑' : pb === 'SELL' ? '↓' : '◆';
+    const stars = '★'.repeat(Math.max(1, Math.min(3, t.patternStrength || 1)));
+    patHtml = `<div class="nbt-pat ${pcls}"><span class="pat-ic">${pIcon}</span>`
+            + `<span class="pat-nm">${esc(t.patternName)}</span>`
+            + `<span class="pat-st">${stars}</span></div>`;
+  }
+
+  // Phase 2 accuracy chip. Hide percentage below 10 samples to avoid anchoring
+  // customers on a misleading number during warm-up.
+  const samples = Number.isFinite(t.samples) ? t.samples : 0;
+  let accText, accClass;
+  if (samples < 10) {
+    accText  = samples === 0 ? 'no track record yet' : `n=${samples} (warming)`;
+    accClass = 'warming';
+  } else {
+    const pct = Math.round((t.hitRate || 0) * 100);
+    accText  = `Last ${samples}: ${pct}%`;
+    accClass = pct >= 60 ? 'good'
+             : pct >= 53 ? 'ok'
+             : pct >= 47 ? 'neutral'
+             :             'bad';
+  }
+
+  // London + Qatar local time of the bar being predicted — helps customers
+  // mentally match the call to the bar on their broker chart.
+  const timesHtml = t.targetBarTimeUtc
+    ? `<div class="nbt-times">${esc(tzHm(t.targetBarTimeUtc, 'Europe/London'))} London · ${esc(tzHm(t.targetBarTimeUtc, 'Asia/Qatar'))} Qatar</div>`
+    : '';
+
+  // Last 5 resolved calls — newest first. Each chip shows ✓/✗ + UP/DOWN.
+  // Lets customers eyeball the model's recent track record without trusting
+  // the aggregated hit-rate %.
+  const priorHtml = renderPriorCalls(t.recentCalls);
+
+  el.innerHTML = `
+    <div class="nbt-head">
+      <span class="nbt-tf">${esc(label)}</span>
+      <span class="nbt-band ${band}">${bandText}</span>
+    </div>
+    ${timesHtml}
+    <div class="nbt-call">
+      <span class="nbt-icon">${dirIcon}</span>
+      <span>${dirLabel}</span>
+      ${confChip}
+    </div>
+    <div class="nbt-lean">
+      <div class="nbt-mid"></div>
+      ${fillHtml}
+    </div>
+    ${brkHtml}
+    ${srHtml}
+    ${patHtml}
+    <div class="nbt-reason">${reason}</div>
+    <div class="nbt-acc ${accClass}">${esc(accText)}</div>
+    ${priorHtml}
+    ${notice}
+  `;
+}
+
+// Render the per-tile "last 5 calls" strip. Backend sends newest-first; we
+// render in the same order so the leftmost chip is the most recent.
+function renderPriorCalls(calls) {
+  if (!Array.isArray(calls) || calls.length === 0) {
+    return `<div class="nbt-prior"><span class="lbl">Last 5:</span><span class="empty">no resolved calls yet</span></div>`;
+  }
+  const chips = calls.slice(0, 5).map(c => {
+    const pred  = (c.direction || '').toUpperCase();
+    // Each chip is a resolved BUY/SELL call (MIXED never recorded). Actual
+    // direction is whatever made the call a hit or miss: hit + UP-pred = UP,
+    // miss + UP-pred = DOWN, and so on.
+    const actual = c.hit
+      ? pred
+      : (pred === 'UP' ? 'DOWN' : pred === 'DOWN' ? 'UP' : '·');
+    const predArrow   = pred === 'UP' ? '↑' : pred === 'DOWN' ? '↓' : '·';
+    const actualLabel = actual === 'UP' ? 'UP' : actual === 'DOWN' ? 'DN' : '·';
+    const cls  = c.hit ? 'hit' : 'miss';
+    const mark = c.hit ? '✓' : '✗';
+    return `<span class="call ${cls}">
+              <span class="pred">${mark} ${predArrow}</span>
+              <span class="actual">${actualLabel}</span>
+            </span>`;
+  }).join('');
+  return `<div class="nbt-prior"><span class="lbl">Last 5:</span>${chips}</div>`;
+}
+
+// HH:mm in a given IANA timezone. Returns '—' if the ISO doesn't parse.
+function tzHm(iso, tz) {
+  try {
+    return new Date(iso).toLocaleTimeString('en-GB', {
+      hour: '2-digit', minute: '2-digit', timeZone: tz, hour12: false
+    });
+  } catch { return '—'; }
+}
+function londonHM(iso) {
+  try {
+    return new Date(iso).toLocaleTimeString('en-GB', {
+      hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London'
+    });
+  } catch { return '—'; }
+}
+
+function paintTile(el, g, phaseLabel, londonTime) {
+  if (!el || !g) return;
+  const lbl = (g.label || '').toUpperCase();
+  let kind = 'hold';
+  if (lbl === 'WAITING')                                                       kind = 'waiting';
+  else if (lbl.includes('FLIP') || lbl.includes('EXIT'))                       kind = 'flip';
+  else if (lbl.includes('SKIP'))                                               kind = 'skip';
+  else if (lbl.includes('ENTER') || lbl.includes('SMALL') || lbl === 'STAY IN'
+           || lbl.includes('TENTATIVE') || lbl === 'FULL ENTRY' || lbl === 'LIKELY STAY') kind = 'act';
+  else if (lbl === 'WATCH' || lbl === 'HOLD STEADY' || lbl === 'HOLD' || lbl === 'WAIT') kind = 'hold';
+
+  el.className = 'midbar-tile ' + kind;
+  const barLabel = g.barDir === 'FLAT' ? 'still flat' : (g.barDir || '—');
+  const timeChip = londonTime
+    ? `<span class="mt-time">${esc(londonTime)} London</span>`
+    : '';
+  el.innerHTML = `
+    <span class="mt-phase">${phaseLabel}${timeChip}</span>
+    <div class="mt-label"><span class="mt-icon">${g.icon || '⏸'}</span>${g.label || ''}</div>
+    <div class="mt-context">${g.context || ''}</div>
+    <div class="mt-bardir">Bar so far: <b>${barLabel}</b></div>
+  `;
+}
+
+// Bar-handler / observability staleness banner. state.updatedAt only proves the
+// 2s heartbeat is alive — not that TickAsync or big-move detection ran.
+// lastTickAt and lastBigMoveDetectionAt expose the real hot paths.
+function renderStalenessBanner(state) {
+  const banner = $('staleness-banner');
+  if (!banner) return;
+  const now = Date.now();
+  const ageMin = (iso) => {
+    if (!iso) return null;
+    const t = Date.parse(iso);
+    return Number.isFinite(t) ? (now - t) / 60000 : null;
+  };
+  const tickAge = ageMin(state.lastTickAt);
+  const bmAge   = ageMin(state.lastBigMoveDetectionAt);
+  // Only warn during a session; outside, staleness is expected
+  if (state.sessionAllowed === false) { banner.style.display = 'none'; return; }
+
+  const problems = [];
+  if (tickAge !== null && tickAge >= 15) problems.push(`TickAsync stalled ${tickAge.toFixed(0)} min`);
+  if (bmAge   !== null && bmAge   >= 10) problems.push(`Recent Calls stalled ${bmAge.toFixed(0)} min`);
+  if (problems.length === 0) { banner.style.display = 'none'; return; }
+
+  banner.style.display = '';
+  banner.textContent = '⚠ Worker stale: ' + problems.join(' · ') + '. Check process / consider restart.';
+}
+
+// Primary-broker (Pepperstone cTrader) execution-health banner. Shown red when the
+// bot reports execBrokerConnected === false — engines keep firing but no REAL orders
+// are placed. Backend also pushes a Telegram alert on the same transition.
+function renderBrokerBanner(state) {
+  const banner = $('broker-banner');
+  if (!banner) return;
+  if (state.execBrokerConnected === false) {
+    banner.style.display = '';
+    banner.textContent = '🔴 ' + (state.execBrokerAlert
+      || 'Auto-execution DOWN — primary broker disconnected; no real orders firing.')
+      + ' Bot auto-reconnects; restart if it persists.';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function renderM5Outlook(o) {
+  const strip = $('m5-strip');
+  if (!o) { strip.style.display = 'none'; return; }
+  strip.style.display = 'flex';
+
+  // Continuous lean — derived from V1's raw score (0..100, 50 = balanced).
+  // |score - 50| × 2 gives a 0..100 "lean strength" that ticks smoothly as
+  // V1's score moves, instead of jumping from 0% to 55% at the bin boundary.
+  // Direction follows whichever side of 50 the score sits on.
+  const score = Number.isFinite(o.score) ? Number(o.score) : 50;
+  const lean  = Math.round(Math.abs(score - 50) * 2);
+  const leanDir = score >= 50 ? 'BUY' : 'SELL';
+  const suppression = (o.suppression || '').toUpperCase();
+  const publishedDir = (o.direction || 'MIXED').toUpperCase();
+  const wasSuppressed = suppression === 'NY' || suppression === 'CHOP';
+
+  // Action tier picked from lean strength, NOT the published confidence.
+  // This way the headline shifts continuously: WAIT (slight) → LEAN → SUGGEST.
+  // Thresholds map to V1's old bands: lean ≥ 30 ≡ conf ≥ 65 (the validated
+  // tradable edge), lean ≥ 20 ≡ conf ≥ 60. Below that we surface the lean
+  // but headline as WAIT.
+  let action, actionCls, headline, blurb;
+  if (wasSuppressed) {
+    // Chop filter is the only suppression path now (NY hours use continuation
+    // mode instead of blocking — see project_m5_ny_continuation).
+    action    = 'WAIT';
+    actionCls = 'wait';
+    headline  = 'Skipping — choppy market';
+    blurb     = `V1 leans ${leanDir} (${lean}%), but the last 8 bars are too `
+              + 'choppy to trust the signal. Waiting for cleaner price action.';
+  } else if (lean >= 30) {
+    action    = leanDir === 'BUY' ? 'SUGGEST BUY' : 'SUGGEST SELL';
+    actionCls = leanDir === 'BUY' ? 'buy' : 'sell';
+    headline  = 'Strong signal';
+    blurb     = leanDir === 'BUY'
+      ? 'Setups like this one tend to push up in the next 5 minutes. '
+      + 'If you trade it, keep your stop tight — even strong signals lose ~45% of the time.'
+      : 'Setups like this one tend to drop in the next 5 minutes. '
+      + 'If you trade it, keep your stop tight — even strong signals lose ~45% of the time.';
+  } else if (lean >= 20) {
+    action    = leanDir === 'BUY' ? 'LEAN BUY' : 'LEAN SELL';
+    actionCls = leanDir === 'BUY' ? 'buy lean' : 'sell lean';
+    headline  = 'Weak lean — caution';
+    blurb     = 'A mild bias is showing, but the edge is small. New traders '
+              + 'are usually better off waiting for a stronger signal.';
+  } else if (lean >= 8) {
+    action    = 'WAIT';
+    actionCls = 'wait';
+    headline  = `Slight ${leanDir.toLowerCase()} lean — not enough yet`;
+    blurb     = `Tilt is toward ${leanDir} but the signal is too weak. `
+              + 'Wait for the lean to grow above 20% before trading.';
+  } else {
+    action    = 'WAIT';
+    actionCls = 'wait';
+    headline  = 'No clear signal';
+    blurb     = "The market isn't showing a direction for the next 5 minutes. "
+              + 'Better to sit this one out than guess.';
+  }
+
+  // Volatility line — plain English, no jargon labels.
+  const regime = (o.regime || 'NEUTRAL').toUpperCase();
+  const volText = regime === 'EXPLOSIVE' ? 'Market is very active right now'
+                : regime === 'ACTIVE'    ? 'Market is active'
+                : regime === 'QUIET'     ? 'Market is quiet — small moves likely'
+                :                          'Market is in a normal range';
+
+  // Lean meter — visual bar. Fills from the midline outward in the lean's
+  // direction, width proportional to lean strength. Always visible (even at
+  // 0%) so the user sees the gauge ticking in real time.
+  const meterDirCls = leanDir === 'BUY' ? 'buy' : 'sell';
+  const meterFillPct = Math.min(50, lean / 2);  // half-bar fills 50% of width
+
+  strip.className = 'm5-strip ' + actionCls;
+
+  strip.innerHTML = `
+    <div class="head">
+      <span>Next 5 minutes</span>
+      <span class="sep">·</span>
+      <span class="time">${esc(o.nextBarLondon || '—')} London</span>
+    </div>
+    <div class="action ${actionCls}">${action}</div>
+    <div class="confline">
+      <span class="conf"><b>${lean}%</b> ${leanDir === 'BUY' ? '▲ leaning BUY' : '▼ leaning SELL'}</span>
+      <span class="sep">·</span>
+      <span class="sub">${headline}</span>
+    </div>
+    <div class="lean-meter">
+      <div class="track">
+        <div class="mid"></div>
+        <div class="fill ${meterDirCls}" style="
+          left: ${leanDir === 'BUY' ? 50 : 50 - meterFillPct}%;
+          width: ${meterFillPct}%;"></div>
+      </div>
+      <div class="ticks">
+        <span class="tick-label sell">▼ SELL</span>
+        <span class="tick-label center">balanced</span>
+        <span class="tick-label buy">BUY ▲</span>
+      </div>
+    </div>
+    <div class="blurb">${blurb}</div>
+    <div class="meta">${volText} · ${Number(o.bigMoveProbPct ?? 0)}% chance of a bigger move (4+ points).</div>
+  `;
+}
+
+function renderBigMoves(moves) {
+  const section = $('bigmoves-section');
+  const list    = $('bigmoves-list');
+  const count   = $('bigmoves-count');
+  if (!Array.isArray(moves) || moves.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+
+  // Show win-count vs total so the user sees the hit ratio at a glance.
+  const wins = moves.filter(m => (m.outcome || '') === 'WIN').length;
+  count.textContent = `${wins}/${moves.length} wins`;
+
+  // Outcome → badge class + label. MISS_NY is amber ("skipped on purpose"),
+  // MISS_NOCALL is amber, MISS_WRONG is red ("we called it wrong"), WIN green.
+  const outcomeFor = (o) => {
+    switch ((o || '').toUpperCase()) {
+      case 'WIN':         return { cls: 'win',  label: '✓ WIN' };
+      case 'MISS_WRONG':  return { cls: 'miss', label: '✗ WRONG' };
+      case 'MISS_NY':     return { cls: 'skip', label: '⏸ NY-BLOCK' };
+      case 'MISS_NOCALL': return { cls: 'skip', label: '⏸ NO-CALL' };
+      default:            return { cls: 'skip', label: '—' };
+    }
+  };
+
+  // Headline-lean chip: mirrors the live "WAIT 13% leaning BUY" / "LEAN BUY 24%"
+  // tiers from renderM5Outlook so each historical row tells you what the
+  // dashboard was saying at that bar. Score/suppression were captured at the
+  // bar's prior close. Historical rows pre-2026-05-19 default to score=50/no
+  // suppression and render as "WAIT · no lean".
+  const leanFor = (score, suppression) => {
+    const s = Number.isFinite(score) ? Number(score) : 50;
+    const lean = Math.round(Math.abs(s - 50) * 2);
+    const dir  = s >= 50 ? 'BUY' : 'SELL';
+    if ((suppression || '').toUpperCase() === 'CHOP') {
+      return { cls: 'chop', label: 'WAIT · CHOP' };
+    }
+    if (lean >= 30) return { cls: dir === 'BUY' ? 'buy'  : 'sell', label: `SUGGEST ${dir} ${lean}%` };
+    if (lean >= 20) return { cls: dir === 'BUY' ? 'buy'  : 'sell', label: `LEAN ${dir} ${lean}%` };
+    if (lean >= 8)  return { cls: 'wait',                          label: `WAIT · ${lean}% ${dir === 'BUY' ? '▲' : '▼'}${dir}` };
+    return            { cls: 'wait',                               label: 'WAIT · no lean' };
+  };
+
+  list.innerHTML = moves.map(m => {
+    const tier = (m.tier || 'BRONZE').toUpperCase();
+    const tierCls = tier === 'GOLD'     ? 'gold'
+                  : tier === 'SILVER'   ? 'silver'
+                  : tier === 'HEADLINE' ? 'headline'
+                  : tier === 'QUIET'    ? 'quiet'
+                  :                       'bronze';
+    // Bar movement direction — NOT a signal. Label as UP/DOWN so it doesn't
+    // collide with V1's BUY/SELL lean shown in the lean chip beside it.
+    const dir = (m.actualDirection || '').toUpperCase();
+    const dirCls = dir === 'BUY' ? 'buy' : 'sell';
+    const arrow  = dir === 'BUY' ? '▲ UP' : '▼ DOWN';
+    const oc   = outcomeFor(m.outcome);
+    const lean = leanFor(m.v1Score, m.v1Suppression);
+
+    // Open / close prices — only show when both are present (historical rows
+    // from before the schema migration default to 0/0 and are suppressed).
+    const op = Number(m.openPrice ?? 0);
+    const cp = Number(m.closePrice ?? 0);
+    const priceText = (op > 0 && cp > 0)
+      ? `${op.toFixed(2)} → ${cp.toFixed(2)}`
+      : '';
+
+    let timeText = '—';
+    try {
+      const d = new Date(m.barTimeUtc);
+      timeText = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
+    } catch {}
+
+    // For wins, show the confidence as the "why" line. For misses, show the
+    // miss_reason text the server already computed.
+    const whyText = (m.outcome === 'WIN')
+      ? `V1 called this — confidence ${Number(m.v1Confidence ?? 0)}%`
+      : (m.missReason || '');
+
+    return `
+      <div class="bigmove-row">
+        <span class="tier ${tierCls}">${tier}</span>
+        <span class="outcome ${oc.cls}">${oc.label}</span>
+        <span class="lean ${lean.cls}" title="Dashboard headline at this bar">${esc(lean.label)}</span>
+        <span class="body">
+          <span class="top">
+            <span class="dir ${dirCls}">${arrow}</span>
+            <span class="time">@ ${esc(timeText)} London</span>
+            ${priceText ? `<span class="price">${esc(priceText)}</span>` : ''}
+          </span>
+          <div class="why">${esc(whyText)}</div>
+        </span>
+        <span class="mag">${Number(m.magnitude ?? 0).toFixed(2)}pt</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// Paper P&L summary card + sparkline. Shows what you would have made today
+// taking every signal (real outcomes + virtual paper outcomes for deduped).
+// ── Oanda broker account panel ────────────────────────────────────────────
+// Renders the live broker-side account state — balance, equity, margin used /
+// available, open trades, unrealised P&L. State is refreshed server-side every
+// ~30s; this function just paints what arrived. Hidden until first snapshot.
+function renderOandaAccount(acct) {
+  const card = $('oanda-account-card');
+  if (!card) return;
+  if (!acct || !acct.accountId) { card.style.display = 'none'; return; }
+  card.style.display = '';
+
+  const cur = acct.currency || 'GBP';
+  const fmt = (n, decimals = 2) => {
+    if (n == null || !Number.isFinite(Number(n))) return '—';
+    return Number(n).toLocaleString(undefined, {
+      minimumFractionDigits: decimals, maximumFractionDigits: decimals
+    });
+  };
+  const sym = ({ GBP: '£', USD: '$', EUR: '€', JPY: '¥', AUD: 'A$' })[cur] || '';
+  const money = (n, d = 2) => sym + fmt(n, d);
+
+  // Practice account IDs start "101-", live start "001-". Badge colors accordingly.
+  const isPractice = (acct.accountId || '').startsWith('101-');
+  const badgeClass = isPractice ? 'oac-badge' : 'oac-badge live';
+  const badgeText  = isPractice ? 'Oanda Practice' : 'Oanda LIVE';
+
+  // Margin closeout warning (broker liquidates at 100%)
+  const moPct = Number(acct.marginCloseoutPct ?? 0);
+  const moClass = moPct >= 80 ? 'neg' : moPct >= 50 ? 'warn' : '';
+
+  const fetched = acct.fetchedAtUtc ? timeSince(acct.fetchedAtUtc) : '—';
+
+  card.innerHTML = `
+    <div class="oac-header">
+      <span class="${badgeClass}">${badgeText}</span>
+      <span class="oac-id">${acct.accountId}</span>
+      <span class="oac-fresh">updated ${fetched}</span>
+    </div>
+    <div class="oac-grid">
+      <div class="oac-stat">
+        <div class="oac-label">Equity (NAV)</div>
+        <div class="oac-value">${money(acct.equity)}</div>
+      </div>
+      <div class="oac-stat">
+        <div class="oac-label">Margin Used</div>
+        <div class="oac-value">${money(acct.marginUsed)}</div>
+        <div class="oac-sub">closeout ${fmt(moPct, 1)}%</div>
+      </div>
+      <div class="oac-stat">
+        <div class="oac-label">Margin Free</div>
+        <div class="oac-value ${moClass}">${money(acct.marginAvailable)}</div>
+      </div>
+      <div class="oac-stat">
+        <div class="oac-label">Open Trades</div>
+        <div class="oac-value">${acct.openTradeCount ?? 0}</div>
+        <div class="oac-sub">${acct.pendingOrderCount ?? 0} pending</div>
+      </div>
+    </div>
+  `;
+}
+
+// Renders the Pepperstone cTrader account next to the Oanda one: balance, open
+// trades, and live floating P&L (in points, from the current price). Replaced
+// the Oanda/Razor "real account today" card on 2026-06-16.
+function renderCTraderAccount(acct, livePrice, history) {
+  const card = $('ctrader-account-card');
+  if (!card) return;
+  if (!acct || !acct.traderLogin) { card.style.display = 'none'; return; }
+  card.style.display = '';
+
+  // Today's closed-trade count and realized net £ — same broker-truth ledger the
+  // "Today's Signals" feed sums from (resets at the 22:55 London cutoff).
+  const closed   = Array.isArray(history) ? history : [];
+  const tradeCnt = closed.length;
+  const netToday = closed.reduce((s, t) => s + (Number(t.netProfit) || 0), 0);
+  const netCls   = !tradeCnt ? '' : netToday > 0 ? 'pos' : netToday < 0 ? 'neg' : '';
+  const netTxt   = !tradeCnt ? '—' : (netToday >= 0 ? '+' : '−') + '£' + Math.abs(netToday).toFixed(2);
+
+  const cur = acct.currency || 'GBP';
+  const sym = ({ GBP: '£', USD: '$', EUR: '€' })[cur] || '';
+  const fmt = (n, d = 2) => (n == null || !Number.isFinite(Number(n))) ? '—'
+    : Number(n).toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+  const money = (n, d = 2) => sym + fmt(n, d);
+
+  const positions = Array.isArray(acct.positions) ? acct.positions : [];
+  const px = Number(livePrice) || 0;
+  // Floating P&L in points (side-aware). XAUUSD 1pt = $1.00.
+  const floatPtsOf = p => {
+    if (!px || !p.entry) return null;
+    return (String(p.side).toUpperCase() === 'SELL') ? (p.entry - px) : (px - p.entry);
+  };
+  let totalFloat = 0, haveFloat = false;
+  for (const p of positions) {
+    const f = floatPtsOf(p);
+    if (f != null) { totalFloat += f; haveFloat = true; }
+  }
+  const fCls = !haveFloat ? '' : totalFloat > 0 ? 'pos' : totalFloat < 0 ? 'neg' : '';
+  const fTxt = !haveFloat ? '—' : (totalFloat >= 0 ? '+' : '−') + Math.abs(totalFloat).toFixed(2) + ' pt';
+
+  const fetched = acct.fetchedAtUtc ? timeSince(acct.fetchedAtUtc) : '—';
+  const badgeText = acct.isDemo ? 'Pepperstone Demo' : 'Pepperstone LIVE';
+
+  const posRows = positions.map(p => {
+    const f = floatPtsOf(p);
+    const fc = f == null ? '' : f > 0 ? 'pos' : f < 0 ? 'neg' : '';
+    const ft = f == null ? '' : `<span class="pos-float ${fc}">${f >= 0 ? '+' : '−'}${Math.abs(f).toFixed(2)}pt</span>`;
+    const sideCls = String(p.side).toLowerCase() === 'sell' ? 'sell' : 'buy';
+    // Per-position close button — local machine only (loopback control endpoint).
+    const closeX = (IS_LOCAL && p.positionId)
+      ? `<button class="pos-close" type="button" title="Close this position" onclick="closePos(${p.positionId})">✕ Close</button>`
+      : '';
+    // Ladder cross-check: the exact price levels to find on the CMC depth ladder,
+    // each with its point distance from entry (side-aware). 1pt XAUUSD = $1.
+    const isSell = String(p.side).toUpperCase() === 'SELL';
+    const dist = (lvl) => {
+      if (p.entry == null || lvl == null || !Number.isFinite(Number(lvl))) return '';
+      const d = isSell ? (p.entry - lvl) : (lvl - p.entry);
+      return ` <span class="pos-dist">(${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(1)}pt)</span>`;
+    };
+    return `<div class="oac-pos-row ${sideCls}">
+      <span class="pos-side ${sideCls}">${p.side}</span>
+      <div class="pos-info">
+        <div class="pos-line1">${fmt(p.volumeLots, 2)} lot @ ${fmt(p.entry, 2)} ${ft}</div>
+        <div class="pos-line2 pos-ladder">
+          <span class="pos-lvl tp">🎯 TP <b>${fmt(p.takeProfit, 2)}</b>${dist(p.takeProfit)}</span>
+          <span class="pos-lvl sl">🛑 SL <b>${fmt(p.stopLoss, 2)}</b>${dist(p.stopLoss)}</span>
+        </div>
+      </div>
+      ${closeX}
+    </div>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="oac-header">
+      <span class="oac-badge pepper">${badgeText}</span>
+      <span class="oac-id">cTrader ${acct.traderLogin}</span>
+      <span class="oac-fresh">updated ${fetched}</span>
+    </div>
+    <div class="oac-grid">
+      <div class="oac-stat">
+        <div class="oac-label">Balance</div>
+        <div class="oac-value">${money(acct.balance)}</div>
+      </div>
+      <div class="oac-stat">
+        <div class="oac-label">Trades Today</div>
+        <div class="oac-value">${tradeCnt}</div>
+      </div>
+      <div class="oac-stat">
+        <div class="oac-label">Net Today</div>
+        <div class="oac-value ${netCls}">${netTxt}</div>
+      </div>
+      <div class="oac-stat">
+        <div class="oac-label">Floating P&L</div>
+        <div class="oac-value ${fCls}">${fTxt}</div>
+      </div>
+      <div class="oac-stat">
+        <div class="oac-label">Open Trades</div>
+        <div class="oac-value">${acct.openPositionCount ?? positions.length}</div>
+      </div>
+      <div class="oac-stat">
+        <div class="oac-label">Symbol</div>
+        <div class="oac-value">XAUUSD</div>
+      </div>
+    </div>
+    ${posRows ? `<div class="oac-positions">${posRows}</div>` : ''}
+  `;
+}
+
+function renderPaperPnl(ppl, hr, live, signals) {
+  const card = $('paper-pnl-card');
+  // Real account only (Oanda NAV delta — broker truth). The paper/points
+  // "Live P&L today" headline was removed 2026-06-01: it double-counted sub
+  // locks via the anchor bug and showed fantasy green while the broker bled.
+  const hasReal = !!live
+               && live.realAccountTodayGbp !== undefined
+               && live.realAccountTodayGbp !== null;
+  if (!hasReal) { card.style.display = 'none'; return; }
+  card.style.display = '';
+
+  const realCol = $('ppl-real-col');
+  if (!realCol) return;
+
+  const g = Number(live.realAccountTodayGbp ?? 0);
+  const p = Number(live.realAccountTodayPts ?? 0);
+  const cls = g > 0 ? 'pos' : g < 0 ? 'neg' : '';
+  const gEl = $('ppl-real-gbp');
+  const pEl = $('ppl-real-pts');
+  if (gEl) {
+    gEl.textContent = (g >= 0 ? '+£' : '−£') + Math.abs(g).toFixed(2);
+    gEl.className = 'ppl-value ' + cls;
+  }
+  if (pEl) pEl.textContent = (p >= 0 ? '+' : '') + p.toFixed(2) + ' pt';
+
+  // Mains-vs-subs split (real £). mains = total − subs; subs' share is the
+  // broker-realised £ from closed sub legs.
+  const splitEl = $('ppl-real-split');
+  if (splitEl) {
+    const gbpChip = (label, v) => {
+      if (v === undefined || v === null) return '';
+      const n = Number(v);
+      const c = n > 0 ? 'pos' : n < 0 ? 'neg' : '';
+      const txt = (n >= 0 ? '+£' : '−£') + Math.abs(n).toFixed(2);
+      return `<span class="chip ${c}">${label} <b>${txt}</b></span>`;
+    };
+    splitEl.innerHTML = gbpChip('mains', live.realMainsTodayGbp);
+  }
+  realCol.style.display = '';
+
+  // ── Razor projection ─────────────────────────────────────────────────
+  // What today's P&L would look like on Pepperstone Razor (raw, ~0.2pt XAU)
+  // vs Oanda's wider effective spread. Each round-trip trade saves ~SAVE pts;
+  // project = real today + SAVE × (number of real trades today). Estimate.
+  const SAVE = 0.40;                          // pts saved per round trip on Razor (Oanda~0.6 → Razor~0.2)
+  const sigs = Array.isArray(signals) ? signals : [];
+  const nTrades = sigs.filter(s => {
+    const st = (s.status || '').toUpperCase();
+    return st === 'WIN' || st === 'LOSS' || st === 'ACTIVE' || typeof s.pnl === 'number';
+  }).length;
+  const savedPts = SAVE * nTrades;
+  const gbpPerPt = p !== 0 ? g / p : 0;
+  const projPts  = p + savedPts;
+  const projGbp  = g + savedPts * Math.abs(gbpPerPt);
+  const rCol = $('ppl-razor-col');
+  if (rCol) {
+    const rg = $('ppl-razor-gbp'), rp = $('ppl-razor-pts'), rn = $('ppl-razor-note');
+    const rcls = projGbp > 0 ? 'pos' : projGbp < 0 ? 'neg' : '';
+    if (rg) { rg.textContent = (projGbp >= 0 ? '+£' : '−£') + Math.abs(projGbp).toFixed(2); rg.className = 'ppl-value ' + rcls; }
+    if (rp) rp.textContent = (projPts >= 0 ? '+' : '') + projPts.toFixed(2) + ' pt' +
+                             (savedPts > 0 ? `  (+${savedPts.toFixed(1)} vs Oanda)` : '');
+    if (rn) rn.textContent = `est · ${nTrades} trade${nTrades === 1 ? '' : 's'} · saves ~${SAVE}pt each on Razor`;
+    rCol.style.display = '';
+  }
+}
+
+function drawSparkline(curve) {
+  const cv = $('ppl-spark');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  // Match canvas pixel size to displayed size for crispness
+  const cssW = cv.clientWidth || 600;
+  const cssH = cv.clientHeight || 60;
+  const dpr  = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(cssW * dpr) || cv.height !== Math.round(cssH * dpr)) {
+    cv.width  = Math.round(cssW * dpr);
+    cv.height = Math.round(cssH * dpr);
+  }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssW, cssH);
+  if (!Array.isArray(curve) || curve.length === 0) return;
+
+  const pts = curve.map(p => Number(p.cumulativePoints || 0));
+  const minY = Math.min(0, Math.min.apply(null, pts));
+  const maxY = Math.max(0, Math.max.apply(null, pts));
+  const range = (maxY - minY) || 1;
+  const pad = 6;
+  const w = cssW - pad * 2;
+  const h = cssH - pad * 2;
+
+  // Zero baseline
+  const zeroY = pad + h - ((0 - minY) / range) * h;
+  ctx.strokeStyle = '#1e293b';
+  ctx.beginPath();
+  ctx.moveTo(pad, zeroY);
+  ctx.lineTo(pad + w, zeroY);
+  ctx.stroke();
+
+  // P&L line
+  ctx.strokeStyle = pts[pts.length - 1] >= 0 ? '#4ade80' : '#f87171';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  pts.forEach((p, i) => {
+    const x = pad + (pts.length === 1 ? w / 2 : (i / (pts.length - 1)) * w);
+    const y = pad + h - ((p - minY) / range) * h;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Final dot
+  const lastX = pad + w;
+  const lastY = pad + h - ((pts[pts.length - 1] - minY) / range) * h;
+  ctx.fillStyle = ctx.strokeStyle;
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 3, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function renderHitRateBanner(hr) {
+  const banner = $('hitrate-banner');
+  if (!banner) return;
+  if (!hr || !hr.belowWarnThreshold) {
+    banner.style.display = 'none';
+    return;
+  }
+  banner.style.display = '';
+  banner.textContent =
+    `⚠ V1 hit rate falling: ${hr.wins}/${hr.sampleCount} = ${Number(hr.hitRatePct).toFixed(1)}% over the last ${hr.windowSize} calls. ` +
+    `Regime may have shifted — consider stepping back.`;
+}
+
+// Today's Signals — every bot signal since 22:55 London with status.
+// Shared Laurito-style card builder. Used by both Open Trade and Today's Signals.
+// When markPrice is provided and the signal is ACTIVE, an extra live tracking
+// row shows current price, unrealized PnL, distance to TP/SL, and time-in-trade.
+function lauritoCard(s, markPrice) {
+  const st = statusFor(s.status);
+  const dir = (s.direction || '').toUpperCase();
+  const dirCls = dir === 'BUY' ? 'buy' : dir === 'SELL' ? 'sell' : '';
+  const active = (s.status || '').toUpperCase() === 'ACTIVE';
+  const ldn = tzHM(s.signalTimeUtc, 'Europe/London');
+  const qat = tzHM(s.signalTimeUtc, 'Asia/Qatar');
+  const pnl = (s.pnlPoints != null && !active)
+    ? `<span class="pnl ${s.pnlPoints >= 0 ? 'pos' : 'neg'}">${s.pnlPoints >= 0 ? '+' : ''}${Number(s.pnlPoints).toFixed(2)}pt</span>`
+    : '';
+  // Real money made/lost on this trade in GBP (Oanda realizedPL). Shown beside
+  // the points badge once the trade has closed; absent for paper/active signals.
+  const gbp = (s.gbpPnl != null && !active)
+    ? `<span class="pnl ${Number(s.gbpPnl) >= 0 ? 'pos' : 'neg'}">${Number(s.gbpPnl) >= 0 ? '+£' : '−£'}${Math.abs(Number(s.gbpPnl)).toFixed(2)}</span>`
+    : '';
+  // Banked check shown beside each TP price when the live tracker has already
+  // taken the 25% partial at that level. Driven by tp1Hit/tp2Hit/tp3Hit flags
+  // overlaid by renderOpenTrades from state.activeTrade.
+  const hitMark = (hit) => hit ? ' <span class="tp-hit">✓ 25% banked</span>' : '';
+  const tp1Hit  = s.tp1Hit ? ' lt-tp-banked' : '';
+  const tp2Hit  = s.tp2Hit ? ' lt-tp-banked' : '';
+  const tp3Hit  = s.tp3Hit ? ' lt-tp-banked' : '';
+  const tp2Line = s.takeProfit2 != null
+    ? `<div class="lt-row${tp2Hit}">TP 2 — <b>${Number(s.takeProfit2).toFixed(2)}</b>${hitMark(s.tp2Hit)}</div>` : '';
+  const tp3Line = s.takeProfit3 != null
+    ? `<div class="lt-row${tp3Hit}">TP 3 — <b>${Number(s.takeProfit3).toFixed(2)}</b>${hitMark(s.tp3Hit)}</div>` : '';
+  const fullTpLine = s.takeProfitFull != null && s.isStaggered
+    ? `<div class="lt-row lt-tp-full">Full TP <b>${Number(s.takeProfitFull).toFixed(2)}</b></div>` : '';
+
+  // Size + Risk line. Prefer the trade's ACTUAL placed units; fall back to the
+  // RiskPercent + balance estimate (e.g. for a signal not yet executed).
+  const riskPct = lastState && Number(lastState.riskPercent) > 0 ? Number(lastState.riskPercent) : 0;
+  const acctBal = lastState && Number(lastState.accountBalanceGbp) > 0 ? Number(lastState.accountBalanceGbp) : 0;
+  const slDist  = Math.abs(Number(s.entry || 0) - Number(s.stopLoss || 0));
+  let sizeLine  = '';
+  if (Number(s.units) > 0) {
+    const u = Math.round(Number(s.units));
+    const riskTxt = slDist > 0 ? ` · Risk: <b>£${(u * slDist).toFixed(2)}</b>${riskPct > 0 ? ` (${riskPct}%)` : ''}` : '';
+    sizeLine = `<div class="lt-row">Size: <b>${u} oz</b>${riskTxt}</div>`;
+  } else if (riskPct > 0 && acctBal > 0 && slDist > 0) {
+    const riskGbp = acctBal * (riskPct / 100);
+    const units   = Math.floor(riskGbp / slDist);
+    sizeLine = `<div class="lt-row">Size: <b>~${units} oz</b> · Risk: <b>£${riskGbp.toFixed(2)}</b> (${riskPct}%)</div>`;
+  }
+  const realizedLine = (s.realizedPartialPnlPts != null && Number(s.realizedPartialPnlPts) > 0)
+    ? `<div class="lt-realized">Realized so far: <b>+${Number(s.realizedPartialPnlPts).toFixed(2)} pt</b> (avg per full lot)</div>` : '';
+
+  // Counterfactual "would have run to" sub-line. Populated post-close when
+  // price kept running past the banked exit (e.g. +7pt early-WIN locked in
+  // TP1 but price later crossed TP3). Display-only — the realised PnL badge
+  // above is what was actually banked.
+  const ranLine = (!active && s.ranToTpLevel != null && s.ranToPts != null)
+    ? `<div class="lt-ran-to">Ran to <b>TP${s.ranToTpLevel}</b> (+${Number(s.ranToPts).toFixed(2)}pt) — counterfactual, no P&L change</div>` : '';
+
+  // Trade Details receipt — broker-style summary shown once the position is
+  // CLOSED (exit fill price, size, spread, realised P&L, what triggered the
+  // close, duration, ticket). Mirrors the Oanda "Trade Details" screen. Only
+  // rendered for real closed trades (a tracked ticket or a realised £ figure) —
+  // paper/deduped/virtual rows are skipped so the receipt never shows fake fills.
+  let detailsBlock = '';
+  const isRealClosed = !active && !s.isVirtual &&
+    (s.oandaTradeId != null || s.gbpPnl != null || s.closePrice != null);
+  if (isRealClosed) {
+    const sign = dir === 'BUY' ? 1 : -1;
+    // Close price: prefer the broker exit fill; else reconstruct from entry + pts.
+    const closePx = (s.closePrice != null)
+      ? Number(s.closePrice)
+      : (s.pnlPoints != null ? Number(s.entry || 0) + sign * Number(s.pnlPoints) : null);
+    // What closed the trade — derived from the normalised status.
+    const trigger = ({ WIN: 'Take Profit', TP1: 'Take Profit', TP2: 'Take Profit',
+                       TP3: 'Take Profit', LOSS: 'Stop Loss', SL: 'Stop Loss',
+                       TIMEOUT: 'Time Exit' })[(s.status || '').toUpperCase()] || '—';
+    const rows = [];
+    if (closePx != null)
+      rows.push(`<div class="lt-dt"><span>Close Price</span><b>${fmt2(closePx)}</b></div>`);
+    if (Number(s.units) > 0)
+      rows.push(`<div class="lt-dt"><span>Units</span><b>${Math.round(Number(s.units))}</b></div>`);
+    if (Number(s.spreadAtEntry) > 0)
+      rows.push(`<div class="lt-dt"><span>Spread @ entry</span><b>${Number(s.spreadAtEntry).toFixed(2)}pt</b></div>`);
+    if (s.pnlPoints != null) {
+      const pc = Number(s.pnlPoints) >= 0 ? 'pos' : 'neg';
+      const ps = Number(s.pnlPoints) >= 0 ? '+' : '';
+      rows.push(`<div class="lt-dt"><span>P/L</span><span class="pnl ${pc}">${ps}${Number(s.pnlPoints).toFixed(2)}pt</span></div>`);
+    }
+    if (s.gbpPnl != null) {
+      const gc = Number(s.gbpPnl) >= 0 ? 'pos' : 'neg';
+      const gs = Number(s.gbpPnl) >= 0 ? '+£' : '−£';
+      rows.push(`<div class="lt-dt"><span>Trade P/L (GBP)</span><span class="pnl ${gc}">${gs}${Math.abs(Number(s.gbpPnl)).toFixed(2)}</span></div>`);
+    }
+    rows.push(`<div class="lt-dt"><span>Close Trigger</span><b>${trigger}</b></div>`);
+    if (Number(s.durationMins) > 0) {
+      const mins = Math.round(Number(s.durationMins));
+      const dTxt = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`;
+      rows.push(`<div class="lt-dt"><span>Held</span><b>${dTxt}</b></div>`);
+    }
+    if (s.oandaTradeId != null)
+      rows.push(`<div class="lt-dt"><span>Ticket</span><b>#${esc(s.oandaTradeId)}</b></div>`);
+    detailsBlock = `
+      <div class="lt-details">
+        <div class="lt-details-title">Trade Details</div>
+        <div class="lt-details-grid">${rows.join('')}</div>
+      </div>
+    `;
+  }
+
+  // Live tracking row — only for ACTIVE signals when we have a current price.
+  let liveBlock = '';
+  if (active && markPrice != null && Number.isFinite(Number(markPrice))) {
+    const mark = Number(markPrice);
+    const entry = Number(s.entry || 0);
+    const sl    = Number(s.stopLoss || 0);
+    const tp    = Number(s.takeProfit1 || 0);
+    const sign  = dir === 'BUY' ? 1 : -1;
+    const pnlPts = (mark - entry) * sign;
+    const pnlCls = pnlPts >= 0 ? 'pos' : 'neg';
+    const pnlSign = pnlPts >= 0 ? '+' : '';
+    const toTp = (tp - mark) * sign;
+    const toSl = (mark - sl) * sign;
+    const ageMs = Math.max(0, Date.now() - Date.parse(s.signalTimeUtc));
+    const mins = Math.floor(ageMs / 60000);
+    const secs = Math.floor((ageMs % 60000) / 1000);
+    // Progress towards TP1 — fills from 0 (at entry) to 100 (at TP1). Capped at 0/100.
+    const totalDist = Math.abs(tp - entry);
+    const pctToTp = totalDist > 0 ? Math.max(0, Math.min(100, ((mark - entry) * sign / totalDist) * 100)) : 0;
+    liveBlock = `
+      <div class="lt-live">
+        <div class="lt-live-row">
+          <span class="lt-now">Now <b>${fmt2(mark)}</b></span>
+          <span class="pnl ${pnlCls}">${pnlSign}${pnlPts.toFixed(2)} pt</span>
+          <span class="lt-age">⏱ ${mins}m ${String(secs).padStart(2,'0')}s</span>
+        </div>
+        <div class="lt-live-row lt-dist">
+          <span>→ TP <b>${toTp.toFixed(2)}</b></span>
+          <span>← SL <b>${toSl.toFixed(2)}</b></span>
+        </div>
+        <div class="lt-progress"><div class="lt-progress-fill ${pnlCls}" style="width:${pctToTp.toFixed(1)}%"></div></div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="laurito-card ${dirCls}${active ? ' active' : ''}">
+      <div class="lt-head">
+        <span class="lt-action">${dir} GOLD now
+          <span class="lt-poe">ENTRY @ <b>${Number(s.entry||0).toFixed(2)}</b></span>
+          <span class="lt-time-inline">🕐 ${esc(ldn)} London · ${esc(qat)} Qatar</span>
+          ${s.oandaTradeId ? `<span class="lt-tid">tid #${esc(s.oandaTradeId)}</span>` : ''}
+        </span>
+        <span class="lt-status ${st.cls}">${st.label}</span>
+        ${pnl}
+        ${gbp}
+      </div>
+      ${(() => {
+        const bits = [`⚙ <b>${esc(s.engineName || 'Unknown')}</b>`];
+        if (s.grade)                       bits.push(`Grade <b>${esc(s.grade)}</b>`);
+        if (Number(s.confidence) > 0)      bits.push(`Conf <b>${Number(s.confidence)}%</b>`);
+        if (Number(s.rr) > 0)              bits.push(`R:R <b>${Number(s.rr).toFixed(2)}</b>`);
+        const head = `<div class="lt-row lt-source">${bits.join(' · ')}</div>`;
+        const why  = s.reason ? `<div class="lt-row lt-source-why">${esc(s.reason)}</div>` : '';
+        const early= s.earlyNote ? `<div class="lt-row lt-source-why">🔎 ${esc(s.earlyNote)}</div>` : '';
+        return head + why + early;
+      })()}
+      <div class="lt-row">SL <b>${Number(s.stopLoss||0).toFixed(2)}</b></div>
+      <div class="lt-row${tp1Hit}">TP 1 — <b>${Number(s.takeProfit1||0).toFixed(2)}</b>${hitMark(s.tp1Hit)}</div>
+      ${tp2Line}
+      ${tp3Line}
+      ${fullTpLine}
+      ${sizeLine}
+      ${realizedLine}
+      ${ranLine}
+      ${detailsBlock}
+      ${liveBlock}
+    </div>
+  `;
+}
+
+// Dense sub-tile card — one line of identity + status, one line of detail,
+// one progress bar. Strips the verbose settings/rules text so layman users
+// see only what's happening NOW. Backend emits two per main (SAME_DIR + OPP_DIR).
+function subCard(sub) {
+  const isSame   = (sub.tileRole || 'SAME_DIR').toUpperCase() === 'SAME_DIR';
+  const dir      = (sub.tileDirection || '').toUpperCase();
+  const phase    = (sub.phase || 'WAITING').toUpperCase();
+
+  const anchor     = Number(sub.anchor ?? 0);
+  const triggerPts = Number(sub.triggerPts ?? 1);
+  const trailPts   = Number(sub.trailRetracePts ?? 2);
+  const minPeak    = Number(sub.minPeakToArmExitPts ?? 3);
+  const exits      = Number(sub.exits ?? 0);
+  const cumPts     = Number(sub.cumulativePts ?? 0);
+  const peak       = Number(sub.peakProfitPts ?? 0);
+  const lastLocked = Number(sub.lastLockedPts ?? 0);
+
+  const sign         = dir === 'BUY' ? 1 : -1;
+  const triggerPrice = anchor + sign * triggerPts;
+  const armedToExit  = (phase === 'TRAILING' && peak >= minPeak);
+
+  let phaseLabel, phaseCls, barCls, barWidth, detail;
+  if (phase === 'WAITING') {
+    phaseLabel = 'STANDBY';   phaseCls = 'standby';  barCls = 'standby';  barWidth = 0;
+    detail = `Triggers @ <b>${fmt2(triggerPrice)}</b>`;
+  } else if (phase === 'TRAILING' && !armedToExit) {
+    phaseLabel = 'BUILDING';  phaseCls = 'building'; barCls = 'building';
+    barWidth = Math.min(100, Math.max(5, (peak / minPeak) * 100));
+    detail = `Peak <b>+${peak.toFixed(1)}pt</b> — need +${minPeak.toFixed(0)}pt to arm exit`;
+  } else if (phase === 'TRAILING' && armedToExit) {
+    phaseLabel = 'LOCK READY'; phaseCls = 'armed';   barCls = 'armed';    barWidth = 100;
+    const lockAt    = peak - trailPts;
+    const exitPrice = anchor + sign * lockAt;
+    detail = `Peak <b>+${peak.toFixed(1)}pt</b> → locks <span class="target">+${lockAt.toFixed(1)}pt @ ${fmt2(exitPrice)}</span>`;
+  } else if (phase === 'REARMING') {
+    phaseLabel = 'JUST LOCKED'; phaseCls = 'rearming'; barCls = 'rearming'; barWidth = 100;
+    detail = `Locked <span class="target">+${lastLocked.toFixed(1)}pt</span> · re-arming near anchor`;
+  } else { // ABANDONED
+    phaseLabel = 'ABANDONED';  phaseCls = 'abandoned'; barCls = 'standby'; barWidth = 0;
+    detail = `Drifted away from anchor`;
+  }
+
+  const cumCls = cumPts > 0 ? 'pos' : 'zero';
+  const cumStr = (cumPts >= 0 ? '+' : '') + cumPts.toFixed(1) + 'pt';
+  const roleCls = (isSame ? 'same' : 'opp') + (phase === 'ABANDONED' ? ' abandoned' : '');
+  const arrow   = isSame ? '↗' : '↘';
+  const roleLbl = isSame ? 'SAME' : 'OPP';
+  const exitsLbl = exits > 0
+    ? `<span style="color:#64748b">· ${exits} lock${exits === 1 ? '' : 's'}</span>` : '';
+
+  return `
+    <div class="sub-card ${roleCls}" data-parent="${esc(sub.parentTradeId || '')}">
+      <div class="sub-line">
+        <span class="sub-arrow">${arrow}</span>
+        <span class="sub-role">${roleLbl}</span>
+        <span class="sub-dir">${dir}</span>
+        <span class="sub-phase ${phaseCls}">${phaseLabel}</span>
+        ${sub.oandaTradeId ? `<span class="sub-tid">tid #${esc(sub.oandaTradeId)}</span>` : ''}
+        <span class="sub-cum ${cumCls}">${cumStr}</span>
+      </div>
+      <div class="sub-detail">${detail} ${exitsLbl}</div>
+      <div class="sub-bar"><div class="sub-bar-fill ${barCls}" style="width:${barWidth}%"></div></div>
+    </div>
+  `;
+}
+
+// Returns a mock activeSubTrades array when ?mockSubs=1 is on the URL —
+// lets us iterate on the dashboard layout before the C# backend wires real subs.
+// Returns null when the flag is absent so the real state.activeSubTrades is used.
+// Dual-tile model: emits TWO entries per active signal (SAME_DIR + OPP_DIR).
+function maybeMockSubs(activeSignals) {
+  if (!new URLSearchParams(location.search).has('mockSubs')) return null;
+  if (!Array.isArray(activeSignals) || activeSignals.length === 0) return [];
+
+  // Per signal, alternate the phase-mix to demo all states across the dashboard.
+  // i=0 → SAME TRAILING (peak 7.4 not yet retraced), OPP WAITING
+  // i=1 → SAME REARMING (just locked +5.4), OPP TRAILING (peak 9.0, exit armed)
+  // i=2 → both have multiple exits running
+  const presets = [
+    { same: { phase: 'TRAILING', peak: 7.4,  cur: 6.1, last: 0,   exits: 0, cum: 0   },
+      opp:  { phase: 'WAITING',  peak: 0,    cur: 0,   last: 0,   exits: 0, cum: 0   } },
+    { same: { phase: 'REARMING', peak: 7.4,  cur: 0.5, last: 5.4, exits: 1, cum: 5.4 },
+      opp:  { phase: 'TRAILING', peak: 9.0,  cur: 7.1, last: 0,   exits: 0, cum: 0   } },
+    { same: { phase: 'TRAILING', peak: 4.8,  cur: 3.2, last: 6.2, exits: 2, cum: 11.6 },
+      opp:  { phase: 'REARMING', peak: 5.4,  cur: 0.3, last: 3.4, exits: 1, cum: 3.4 } },
+  ];
+
+  const out = [];
+  activeSignals.forEach((s, i) => {
+    const mainDir = (s.direction || '').toUpperCase();
+    const oppDir  = mainDir === 'BUY' ? 'SELL' : 'BUY';
+    const anchor  = Number(s.entry || 0);
+    const p = presets[i % presets.length];
+
+    // SAME-DIR tile (matches main direction)
+    out.push({
+      parentTradeId: s.id,
+      parentDirection: mainDir,
+      anchor,
+      tileRole: 'SAME_DIR',
+      tileDirection: mainDir,
+      phase: p.same.phase,
+      triggerPts: 1,
+      currentProfitPts: p.same.cur,
+      peakProfitPts: p.same.peak,
+      lastLockedPts: p.same.last,
+      exits: p.same.exits,
+      cumulativePts: p.same.cum,
+      trailRetracePts: 2,
+      minPeakToArmExitPts: 3,
+      armBandPts: 1,
+      abandonAtPts: 20,
+    });
+    // OPP-DIR tile (opposite direction)
+    out.push({
+      parentTradeId: s.id,
+      parentDirection: mainDir,
+      anchor,
+      tileRole: 'OPP_DIR',
+      tileDirection: oppDir,
+      phase: p.opp.phase,
+      triggerPts: 1,
+      currentProfitPts: p.opp.cur,
+      peakProfitPts: p.opp.peak,
+      lastLockedPts: p.opp.last,
+      exits: p.opp.exits,
+      cumulativePts: p.opp.cum,
+      trailRetracePts: 2,
+      minPeakToArmExitPts: 3,
+      armBandPts: 1,
+      abandonAtPts: 20,
+    });
+  });
+  return out;
+}
+
+function statusFor(s) {
+  switch ((s || '').toUpperCase()) {
+    case 'ACTIVE':  return { cls: 'open',    label: '⏵ ACTIVE' };
+    case 'WIN':
+    case 'TP1':
+    case 'TP2':
+    case 'TP3':     return { cls: 'win',     label: '✓ WIN' };
+    case 'LOSS':
+    case 'SL':      return { cls: 'miss',    label: '✗ LOSS' };
+    case 'TIMEOUT': return { cls: 'skip',    label: '⏲ TIMEOUT' };
+    case 'DEDUPED': return { cls: 'skip',    label: '⏸ DEDUPED' };
+    default:        return { cls: 'skip',    label: (s || '—').toUpperCase() };
+  }
+}
+
+function renderTodaysSignals(signals) {
+  const section = $('todays-signals-section');
+  const list    = $('todays-signals-list');
+  const count   = $('todays-signals-count');
+  if (!Array.isArray(signals) || signals.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  count.textContent = String(signals.length);
+
+  // Tradeable pill — how many of today's signals pass all 5 precision gates
+  const tradeableN = signals.filter(s => s.tradeable === true).length;
+  const tradeablePill = $('tradeable-count');
+  if (tradeablePill) {
+    if (tradeableN > 0) {
+      tradeablePill.textContent = `★ ${tradeableN} TRADEABLE`;
+      tradeablePill.style.display = '';
+    } else {
+      tradeablePill.style.display = 'none';
+    }
+  }
+
+  // Single flat list — every signal today, newest first (descending by signal
+  // time). Each card already shows its own engine (⚙) + status, so no grouping
+  // needed. (Was grouped-by-engine; flattened 2026-06-14 per request.)
+  const sorted = signals.slice().sort((a, b) =>
+    (b.signalTimeUtc || '').localeCompare(a.signalTimeUtc || ''));
+  list.innerHTML = sorted.map(s => lauritoCard(s)).join('');
+}
+
+// ── Today's Trades — REAL Pepperstone (cTrader) closed-trade history ────────
+// Broker-truth ledger: actual fills, realized GBP P&L, running balance. Covers
+// both automated engine trades and manual dashboard-button trades. Resets at
+// the 22:55 London daily cutoff (driven server-side). NOT the Oanda/paper view.
+// ── Per-engine scoreboard — groups today's Pepperstone (cTrader) closed trades
+// by engine and shows trades / wins / SLs / net £. "Today" = the London calendar
+// day of the latest update, so it lines up with the Today's Trades ledger below.
+function normEngineName(raw) {
+  const n = (raw || '').trim();
+  if (!n || n === '—') return 'Unknown';
+  // m1mom-M1-Mom_Midbar_+2-<id>  /  m1mom-M1-Mom_Close_+2-<id>
+  const m = n.match(/^m1mom-M1-Mom_(\w+?)_/i);
+  if (m) return 'M1-Mom ' + m[1];
+  if (/^m1mom-/i.test(n)) return 'M1-Mom';
+  if (/^volspike-/i.test(n)) return 'Vol-Spike';
+  return n.replace(/-\d{6,}$/, '');   // strip any trailing -<id>
+}
+
+function renderEngineSummary(history) {
+  const section = $('engine-summary-section');
+  const wrap    = $('engine-summary-wrap');
+  const count   = $('engine-summary-count');
+  if (!section || !wrap) return;
+  // Use the SAME basis as the "Net Today" card and the "Today's Trades" ledger:
+  // the whole ctraderHistory array as published by the backend (already scoped to
+  // the London trading day, reset at the 22:55 cutoff). No extra date filter here
+  // — otherwise the table totals drift from "Net Today".
+  const arr = Array.isArray(history) ? history : [];
+  section.style.display = '';
+  if (arr.length === 0) {
+    if (count) count.textContent = '0';
+    wrap.innerHTML = '<div class="placeholder">No Pepperstone trades closed today yet.</div>';
+    return;
+  }
+
+  const g = {};
+  for (const t of arr) {
+    const k = normEngineName(t.engineName);
+    const pnl = Number(t.netProfit) || 0;
+    const reason = (t.closeReason || '').toUpperCase();
+    const e = g[k] || (g[k] = { name: k, trades: 0, wins: 0, sls: 0, net: 0, winAmt: 0, lossAmt: 0 });
+    e.trades++;
+    if (pnl > 0) { e.wins++; e.winAmt += pnl; }
+    else         { e.lossAmt += pnl; }
+    if (reason === 'SL') e.sls++;
+    e.net += pnl;
+  }
+  const rows = Object.values(g).sort((a, b) => b.net - a.net);
+  const tot = rows.reduce((s, e) => ({
+    trades: s.trades + e.trades, wins: s.wins + e.wins, sls: s.sls + e.sls,
+    net: s.net + e.net, winAmt: s.winAmt + e.winAmt, lossAmt: s.lossAmt + e.lossAmt
+  }), { trades: 0, wins: 0, sls: 0, net: 0, winAmt: 0, lossAmt: 0 });
+
+  if (count) count.textContent =
+    `${rows.length} engine${rows.length === 1 ? '' : 's'} · ${tot.net >= 0 ? '+' : '−'}£${Math.abs(tot.net).toFixed(2)}`;
+
+  const wrCls = wr => wr >= 55 ? 'wr-good' : wr >= 45 ? 'wr-ok' : 'wr-bad';
+  const moneyCell = v => `<td class="${v >= 0 ? 'pos' : 'neg'}">${v >= 0 ? '+' : '−'}£${Math.abs(v).toFixed(2)}</td>`;
+  const rowHtml = e => {
+    const wr = e.trades ? (e.wins / e.trades * 100) : 0;
+    const losses = e.trades - e.wins;
+    return `<tr>
+      <td class="eng-name">${esc(e.name)}</td>
+      <td>${e.trades}</td>
+      <td class="pos">${e.wins}</td>
+      <td class="${losses ? 'neg' : 'muted'}">${losses}</td>
+      <td class="${e.sls ? 'neg' : 'muted'}">${e.sls}</td>
+      <td class="${wrCls(wr)}">${wr.toFixed(0)}%</td>
+      ${moneyCell(e.winAmt)}
+      ${moneyCell(e.lossAmt)}
+      ${moneyCell(e.net)}
+    </tr>`;
+  };
+  const totWr = tot.trades ? (tot.wins / tot.trades * 100) : 0;
+  wrap.innerHTML = `<table class="eng-sum-table">
+    <thead><tr>
+      <th class="eng-name">Engine</th><th>Trades</th><th>Wins</th><th>Losses</th><th>SLs</th><th>Win%</th><th>Win £</th><th>Loss £</th><th>Net P&amp;L</th>
+    </tr></thead>
+    <tbody>
+      ${rows.map(rowHtml).join('')}
+      <tr class="eng-total">
+        <td class="eng-name">All engines</td>
+        <td>${tot.trades}</td>
+        <td>${tot.wins}</td>
+        <td>${tot.trades - tot.wins}</td>
+        <td>${tot.sls}</td>
+        <td>${totWr.toFixed(0)}%</td>
+        ${moneyCell(tot.winAmt)}
+        ${moneyCell(tot.lossAmt)}
+        ${moneyCell(tot.net)}
+      </tr>
+    </tbody>
+  </table>`;
+}
+
+function renderCtraderHistory(trades) {
+  const section = $('todays-signals-section');
+  const list    = $('todays-signals-list');
+  const count   = $('todays-signals-count');
+  if (!section || !list) return;
+  const tp = $('tradeable-count'); if (tp) tp.style.display = 'none';
+
+  const arr = Array.isArray(trades) ? trades.slice() : [];
+  section.style.display = '';
+  if (count) count.textContent = String(arr.length);
+  if (arr.length === 0) {
+    list.innerHTML = '<div class="placeholder">No Pepperstone trades closed today yet.</div>';
+    return;
+  }
+
+  arr.sort((a, b) => (b.closeTimeUtc || '').localeCompare(a.closeTimeUtc || ''));
+  // Running net for the day, summed from the rows we have.
+  const net = arr.reduce((s, t) => s + (Number(t.netProfit) || 0), 0);
+  if (count) count.textContent = `${arr.length} · ${net >= 0 ? '+' : '−'}£${Math.abs(net).toFixed(2)}`;
+  list.innerHTML = arr.map(cTraderHistoryCard).join('');
+}
+
+function cTraderHistoryCard(t) {
+  const buy    = (t.side || '').toUpperCase() === 'BUY';
+  const dirCls = buy ? 'buy' : 'sell';
+  const pnl    = Number(t.netProfit) || 0;
+  const pnlCls = pnl >= 0 ? 'pos' : 'neg';
+  const sign   = pnl >= 0 ? '+' : '−';
+  const ldn    = tzHM(t.closeTimeUtc, 'Europe/London');
+  const qat    = tzHM(t.closeTimeUtc, 'Asia/Qatar');
+  const lots   = Number(t.lots) || 0;
+  const bal    = Number(t.balance) || 0;
+  const eng    = t.engineName && t.engineName !== '—' ? t.engineName : 'Unknown';
+  const isManual = /manual/i.test(eng);
+  const srcCls = isManual ? 'lg-src-manual' : 'lg-src-engine';
+  // How the position closed: TP / SL / engine time-exit / manually (by you via dashboard).
+  const reason = (t.closeReason || '').toUpperCase();
+  const rChip = reason === 'TP'        ? '<span class="lg-cr lg-cr-tp">🎯 TP</span>'
+              : reason === 'SL'        ? '<span class="lg-cr lg-cr-sl">🛑 SL</span>'
+              : reason === 'TIME_EXIT' ? '<span class="lg-cr lg-cr-time">⏱ Time-exit</span>'
+              : reason === 'MANUAL'    ? '<span class="lg-cr lg-cr-man">✋ Closed by you</span>'
+              : '';
+  return `<div class="laurito-card ${dirCls}">
+      <div class="lt-head">
+        <span class="lt-action">${buy ? '▲ BUY' : '▼ SELL'} ${lots.toFixed(2)} lot</span>
+        <span class="lt-poe">${fmt2(t.openPrice)} → <b>${fmt2(t.closePrice)}</b></span>
+        <span class="lt-time-inline">${ldn} Ldn · ${qat} Qat</span>
+        ${rChip}
+        <span class="pnl ${pnlCls}">${sign}£${Math.abs(pnl).toFixed(2)}</span>
+      </div>
+      <div class="lt-row lt-source">
+        <span class="lg-src ${srcCls}">${isManual ? '✋' : '⚙'} ${esc(eng)}</span>
+        <span style="color:#475569"> · Pepperstone · balance £${bal.toFixed(2)}</span>
+      </div>
+    </div>`;
+}
+
+// Format a UTC ISO timestamp as HH:mm in any IANA timezone.
+function tzHM(iso, tz) {
+  try {
+    return new Date(iso).toLocaleTimeString('en-GB', {
+      hour: '2-digit', minute: '2-digit', timeZone: tz
+    });
+  } catch { return '—'; }
+}
+
+function renderOpenTrades(activeSignals, markPrice) {
+  const list  = $('open-list');
+  const count = $('open-count');
+  if (!Array.isArray(activeSignals) || activeSignals.length === 0) {
+    count.textContent = '0';
+    list.innerHTML = '<div class="placeholder">No open trades.</div>';
+    return;
+  }
+
+  // PingPong subs removed from the dashboard (turned off 2026-06-01, no edge).
+  // subCard()/maybeMockSubs() and the .sub-card CSS are retained for easy
+  // restore if subs are ever re-enabled.
+  count.textContent = String(activeSignals.length);
+
+  const sorted = activeSignals.slice().sort((a, b) =>
+    (b.signalTimeUtc || '').localeCompare(a.signalTimeUtc || ''));
+  // Each signal already carries its OWN 4-TP ladder + partial-hit state, mapped
+  // per-trade by computeActiveSignals → activeTradeToSignal. Do NOT overlay the
+  // singular state.activeTrade here: it is _activeTrades[0] (oldest open trade)
+  // and would get stamped onto sorted[0] (newest), painting one trade's ladder
+  // with another's whenever ≥2 trades are open (the BUY-shows-SELL-TPs bug).
+
+  // Render main cards only (subs removed — see note above).
+  list.innerHTML = sorted.map(s => lauritoCard(s, markPrice)).join('');
+}
+
+// Shared between the main render path and the per-second ticker. Returns the
+// list of "active" signals that the Open Trade panel should render.
+// Priority order:
+//   1. state.activeTrades (plural) — one entry per open main, lifted into
+//      synthetic ACTIVE signals so the existing card builder can render them.
+//      Each entry's id = its TradeId (Guid) so subs pair by parentTradeId.
+//   2. state.todaySignals filtered by status=ACTIVE — the legacy path.
+//   3. Fallback: synthesise one ACTIVE from singular state.activeTrade.
+function activeTradeToSignal(at, subParentFallback) {
+  return {
+    id:             at.tradeId || subParentFallback || (at.engineName + '-' + at.openedAt),
+    signalTimeUtc:  at.openedAt,
+    engineName:     at.engineName,
+    direction:      at.direction,
+    confidence:     at.confidence ?? 0,
+    grade:          at.grade,
+    reason:         at.reason,
+    earlyNote:      at.earlyNote,
+    rr:             at.rr,
+    entry:          at.entry,
+    stopLoss:       at.sl,
+    takeProfit1:    at.tp1,
+    takeProfit2:    at.tp2,
+    takeProfit3:    at.tp3,
+    takeProfitFull: at.tpFull,
+    isStaggered:    at.isStaggered,
+    tp1Hit:         at.tp1Hit,
+    tp2Hit:         at.tp2Hit,
+    tp3Hit:         at.tp3Hit,
+    status:         'ACTIVE',
+    realizedPartialPnlPts: at.realizedPartialPnlPts,
+    // Carry broker tradeID so lauritoCard can render the `tid #N` badge.
+    // Source: state.activeTrades[].oandaTradeId set by DashboardStateWriter
+    // when the parent has an open Oanda position.
+    oandaTradeId:   at.oandaTradeId,
+    // Actual placed position size (OANDA units = oz for XAU).
+    units:          at.units,
+  };
+}
+function computeActiveSignals(state, allSignals) {
+  if (Array.isArray(state.activeTrades) && state.activeTrades.length > 0) {
+    return state.activeTrades.map(at => activeTradeToSignal(at));
+  }
+  const byStatus = (allSignals || []).filter(s => (s.status || '').toUpperCase() === 'ACTIVE');
+  if (byStatus.length > 0) return byStatus;
+  if (state.activeTrade) {
+    const subParent = (state.activeSubTrades && state.activeSubTrades[0])
+      ? state.activeSubTrades[0].parentTradeId : null;
+    return [activeTradeToSignal(state.activeTrade, subParent)];
+  }
+  return [];
+}
+
+// Per-second ticker — re-renders the Open Trade list using the cached state
+// so the time-in-trade counter and live PnL keep updating between polls.
+setInterval(() => {
+  if (!lastState) return;
+  const activeSignals = computeActiveSignals(lastState, lastState.todaySignals);
+  renderOpenTrades(activeSignals, lastState.price);
+  $('ft-ago').textContent = timeSince(lastState.updatedAt);
+}, 1000);
+
+
+function renderDailyRecap(r) {
+  const body = $('recap-body');
+  const dateLbl = $('recap-date');
+  if (!r) {
+    dateLbl.textContent = '—';
+    body.innerHTML = '<div class="placeholder">No trades closed today yet.</div>';
+    return;
+  }
+  dateLbl.textContent = r.dateUtc;
+  const net    = Number(r.netPoints || 0);
+  const netCls = net > 0 ? 'pnl-pos' : net < 0 ? 'pnl-neg' : 'pnl-flat';
+  const netStr = (net > 0 ? '+' : '') + net.toFixed(2);
+  const winRate = r.tradesClosed > 0 ? Math.round(100 * r.wins / r.tradesClosed) : 0;
+  body.innerHTML = `
+    <div class="trade-row">
+      <div class="inputs">
+        <div><span class="label">Trades</span><span class="v">${r.tradesClosed}</span></div>
+        <div><span class="label">W / L</span><span class="v">${r.wins} / ${r.losses}</span></div>
+        <div><span class="label">Win %</span><span class="v">${winRate}%</span></div>
+        <div><span class="label">Biggest +</span><span class="v">+${Number(r.biggestWinPoints||0).toFixed(2)}</span></div>
+        <div><span class="label">Biggest −</span><span class="v">${Number(r.biggestLossPoints||0).toFixed(2)}</span></div>
+        <div title="Trades that closed at TP1 and would have ridden on to TP2 within the original 100-min window. Does not affect W/L."><span class="label">TP2 bonus</span><span class="v">${Number(r.tp2BonusCount||0)}</span></div>
+        ${r.bestEngine  ? `<div><span class="label">Best</span><span class="v">${r.bestEngine}</span></div>`  : ''}
+        ${r.worstEngine ? `<div><span class="label">Worst</span><span class="v">${r.worstEngine}</span></div>` : ''}
+      </div>
+      <div class="result">
+        <div class="pnl ${netCls}">${netStr}</div>
+        <div class="outcome">pts today</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderClosedTrades(trades) {
+  const list = $('closed-list');
+  $('closed-count').textContent = trades.length;
+  if (trades.length === 0) {
+    list.innerHTML = '<div class="placeholder">No closed trades yet.</div>';
+    return;
+  }
+  list.innerHTML = trades.map(t => {
+    const dir     = (t.direction || '').toLowerCase();
+    const dirCls  = dir === 'buy' ? 'buy' : 'sell';
+    const pnl     = Number(t.pnlPoints || 0);
+    const pnlCls  = pnl > 0 ? 'pnl-pos' : pnl < 0 ? 'pnl-neg' : 'pnl-flat';
+    const pnlSign = pnl > 0 ? '+' : '';
+    const rowCls  = pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'flat';
+    // Real money made/lost on this trade in GBP (Oanda realizedPL). Shown under
+    // the points figure; omitted when unavailable (paper / pre-restart trades).
+    const gbpVal  = (t.gbpPnl != null) ? Number(t.gbpPnl) : null;
+    const gbpLine = (gbpVal != null)
+      ? `<div class="pnl ${gbpVal >= 0 ? 'pnl-pos' : 'pnl-neg'}">${gbpVal >= 0 ? '+£' : '−£'}${Math.abs(gbpVal).toFixed(2)}</div>`
+      : '';
+    const openedIso = isoMinus(t.closedAt, t.minutesOpen);
+    return `
+      <div class="trade-row ${rowCls}">
+        <div class="trade-dir ${dirCls}">${(t.direction || '—').toUpperCase()}</div>
+        <div class="trade-meta">
+          <div><span class="label">Engine</span><span class="engine">${esc(t.engineName || '—')}</span>
+               &nbsp;·&nbsp; <span class="label">RR</span>${Number(t.rr || 0).toFixed(2)}
+               &nbsp;·&nbsp; <span class="label">Held</span>${t.minutesOpen ?? 0}m</div>
+          <div class="times">
+            <span class="label">Open</span><span class="frozen">${londonFull(openedIso)}</span>
+            <span class="sep">→</span>
+            <span class="label">Close</span><span class="frozen">${londonFull(t.closedAt)}</span>
+          </div>
+        </div>
+        <div class="levels">
+          <div><span class="label">Entry</span><span class="v">${fmt2(t.entry)}</span></div>
+          <div><span class="label">Exit</span><span class="v">${fmt2(t.exitPrice)}</span></div>
+        </div>
+        <div class="result">
+          <div class="pnl ${pnlCls}">${pnlSign}${pnl.toFixed(1)} pts</div>
+          ${gbpLine}
+          <div class="outcome ${pnlCls}">${esc(t.outcome || '—')}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function poll() {
+  try {
+    const r = await fetch(STATE_PATH + '?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('http ' + r.status);
+    const state = await r.json();
+    // Fingerprint built from the M5 outlook (the now-live data) + updatedAt.
+    // Tile data is no longer rendered (2026-05-19) so it's dropped from the fp.
+    const fp = JSON.stringify(state.m5Outlook ?? null) + '|' +
+               JSON.stringify(state.bigMoves ?? null)   + '|' +
+               (state.updatedAt || '');
+    if (fp !== lastFingerprint) {
+      lastFingerprint = fp;
+      render(state);
+    } else {
+      $('ft-ago').textContent = timeSince(state.updatedAt);
+    }
+  } catch (e) {
+    $('live-dot').className    = 'dot dot-off';
+    $('live-text').textContent = 'Offline';
+    $('ft-ago').innerHTML      = '<span class="stale">cannot reach state.json</span>';
+  }
+}
+
+// ── Research-variants expander toggle ─────────────────────────────────────
+// Persists preference in localStorage so the user's collapsed/expanded choice
+// survives reloads. Defaults to collapsed (research rows hidden).
+(function initResearchToggle() {
+  const btn  = document.getElementById('nbt-research-toggle');
+  const body = document.getElementById('nbt-research-body');
+  if (!btn || !body) return;
+  const labelEl = btn.querySelector('span:first-child');
+  const KEY = 'nbtResearchOpen';
+  const open = localStorage.getItem(KEY) === '1';
+  const apply = (isOpen) => {
+    body.classList.toggle('open', isOpen);
+    btn.classList.toggle('open', isOpen);
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    if (labelEl) labelEl.textContent = isOpen ? 'Hide research variants' : 'Show research variants';
+  };
+  apply(open);
+  btn.addEventListener('click', () => {
+    const next = !body.classList.contains('open');
+    localStorage.setItem(KEY, next ? '1' : '0');
+    apply(next);
+  });
+})();
+
+poll();
+setInterval(poll, POLL_MS);
+
+// Engine scoreboard — explicit 3-second refresh from the latest fetched state.
+// (The main poll above already repaints it every second; this guarantees a 3s
+// cadence for the table specifically, independent of POLL_MS.)
+setInterval(() => {
+  if (lastState) renderEngineSummary(lastState.ctraderHistory);
+}, 3000);
+
+// ── Local-only controls ───────────────────────────────────────────────────
+// IS_LOCAL keys off the PAGE hostname, not a probe: true only when the dashboard
+// URL itself is localhost/127.0.0.1. On gold-bot-manu.com it is always false —
+// even when opened on the engine machine — so the manual buttons and the engine
+// status panel never appear on the public tunnel. The loopback :8090 endpoint
+// (not tunnelled, + proxy-header reject) remains the real execution safeguard.
+const IS_LOCAL = ['localhost', '127.0.0.1', ''].includes(location.hostname)
+              || location.protocol === 'file:';
+const MT_ENDPOINT = `http://127.0.0.1:8090/api/trade`;
+const CLOSE_ENDPOINT = `http://127.0.0.1:8090/api/close`;
+
+// Per-position close — invoked from the inline ✕ button on each cTrader position
+// row. Local-only (the button is only rendered when IS_LOCAL). Posts the
+// positionId so just that one is closed; status shows on the manual panel.
+async function closePos(positionId) {
+  const st = document.getElementById('mt-status');
+  const say = (msg, ok) => { if (st) { st.textContent = msg; st.className = 'mt-status ' + (ok ? 'ok' : 'err'); } };
+  say(`closing position ${positionId}…`, true);
+  try {
+    const r = await fetch(CLOSE_ENDPOINT, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ positionId })
+    });
+    const j = await r.json().catch(() => ({ ok: r.ok }));
+    say(j.message || (j.ok ? 'closing…' : 'close failed'), j.ok);
+  } catch (e) {
+    say('unreachable — open the dashboard locally to close', false);
+  }
+}
+window.closePos = closePos;
+
+// Engine Status (full per-engine grid) stays LOCAL-ONLY. The PUBLIC dashboard
+// shows only the M1-Momentum signal card (#m1mom-card, always visible).
+(function gateLocalSections() {
+  const es = $('engine-status-section');
+  if (es) es.style.display = IS_LOCAL ? '' : 'none';
+})();
+
+(function initManualTrade() {
+  const panel = $('manual-trade-panel');
+  const buyBtn = $('mt-buy'), sellBtn = $('mt-sell'), status = $('mt-status');
+  const closeBtn = $('mt-close');
+  if (!panel || !buyBtn || !sellBtn) return;
+
+  // Buttons appear only when the page itself is served locally.
+  panel.style.display = IS_LOCAL ? '' : 'none';
+  if (!IS_LOCAL) return;   // don't even wire handlers on the public page
+
+  async function fire(side) {
+    // One-click — no confirm dialog (per user request). Demo account, local-only.
+    buyBtn.disabled = sellBtn.disabled = true;
+    status.textContent = `sending ${side}…`; status.className = 'mt-status';
+    try {
+      const r = await fetch(MT_ENDPOINT, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ side })
+      });
+      const j = await r.json().catch(() => ({ ok: r.ok, message: r.ok ? 'sent' : 'failed' }));
+      status.textContent = j.message || (j.ok ? `${side} sent` : 'failed');
+      status.className = 'mt-status ' + (j.ok ? 'ok' : 'err');
+    } catch (e) {
+      status.textContent = 'unreachable — open the dashboard locally to trade';
+      status.className = 'mt-status err';
+    } finally {
+      buyBtn.disabled = sellBtn.disabled = false;
+    }
+  }
+  buyBtn.addEventListener('click', () => fire('BUY'));
+  sellBtn.addEventListener('click', () => fire('SELL'));
+
+  // CLOSE ALL — flatten every open Pepperstone position. One-click (demo, local).
+  async function closeAll() {
+    if (closeBtn) closeBtn.disabled = true;
+    buyBtn.disabled = sellBtn.disabled = true;
+    status.textContent = 'closing all positions…'; status.className = 'mt-status';
+    try {
+      const r = await fetch(CLOSE_ENDPOINT, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+      });
+      const j = await r.json().catch(() => ({ ok: r.ok, message: r.ok ? 'closed' : 'failed' }));
+      status.textContent = j.message || (j.ok ? 'closed' : 'failed');
+      status.className = 'mt-status ' + (j.ok ? 'ok' : 'err');
+    } catch (e) {
+      status.textContent = 'unreachable — open the dashboard locally to close';
+      status.className = 'mt-status err';
+    } finally {
+      if (closeBtn) closeBtn.disabled = false;
+      buyBtn.disabled = sellBtn.disabled = false;
+    }
+  }
+  if (closeBtn) closeBtn.addEventListener('click', closeAll);
+})();
+</script>
+</body>
+</html>
